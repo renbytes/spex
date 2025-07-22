@@ -1,0 +1,14 @@
+language = "Python"
+analysis_type = "Energy Production Analysis"
+description = "Analyzes daily energy production from renewable sources."
+
+[[dataset]]
+name = "renewable_production"
+description = "Daily production data for solar and wind sources."
+sample_data_path = "examples/energy/sample_data.csv"
+
+[[metric]]
+name = "total_production_mwh"
+logic = "The sum of megawatt-hours produced, grouped by source_type."
+aggregation = "Sum"
+aggregation_field = "production_mwh"

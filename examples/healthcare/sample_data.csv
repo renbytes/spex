@@ -1,0 +1,7 @@
+patient_id,admission_date,discharge_date,department
+PAT-001,2025-07-10,2025-07-15,Cardiology
+PAT-002,2025-07-11,2025-07-14,Orthopedics
+PAT-003,2025-07-12,2025-07-20,Oncology
+PAT-004,2025-07-13,2025-07-16,Cardiology
+PAT-005,2025-07-14,2025-07-21,Orthopedics
+PAT-006,2025-07-15,2025-07-19,Cardiology

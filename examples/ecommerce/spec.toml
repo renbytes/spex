@@ -1,0 +1,21 @@
+language = "Sql"
+analysis_type = "Top 10 Selling Products"
+description = "Identifies the top 10 best-selling products by total quantity sold."
+
+# UPDATED: Using an array of tables to define multiple input datasets.
+[[dataset]]
+name = "sales_orders"
+description = "Transactional data of product sales."
+sample_data_path = "examples/ecommerce/sales_orders.csv"
+
+[[dataset]]
+name = "products"
+description = "Product metadata, including product names."
+sample_data_path = "examples/ecommerce/products.csv"
+
+[[metric]]
+name = "total_quantity_sold"
+# UPDATED: Logic now explicitly mentions the join.
+logic = "Join the sales_orders table with the products table on product_id. Then, find the sum of quantity for each product. The final output should be ordered by this sum in descending order and limited to the top 10 products."
+aggregation = "Sum"
+aggregation_field = "quantity"

@@ -1,0 +1,21 @@
+# SQL and database libraries
+sqlalchemy>=1.4.0
+psycopg2-binary>=2.9.0
+pymysql>=1.0.0
+sqlite3
+
+# dbt for analytics engineering
+dbt-core>=1.6.0
+dbt-postgres>=1.6.0
+
+# Data validation
+dbt-expectations>=0.9.0
+
+# Development tools
+pytest>=7.0.0
+black>=22.0.0
+flake8>=5.0.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocs-material>=9.0.0

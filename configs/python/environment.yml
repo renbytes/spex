@@ -1,0 +1,72 @@
+name: data-analysis-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Python version
+  - python=3.11
+  
+  # Core data science stack
+  - pandas>=1.5.0
+  - numpy>=1.21.0
+  - scipy>=1.7.0
+  
+  # Visualization
+  - matplotlib>=3.5.0
+  - seaborn>=0.11.0
+  - plotly>=5.0.0
+  
+  # Statistical analysis
+  - scikit-learn>=1.1.0
+  - statsmodels>=0.13.0
+  
+  # Jupyter ecosystem
+  - jupyter
+  - jupyterlab
+  - ipykernel
+  - ipywidgets
+  
+  # Performance libraries
+  - numba
+  - dask
+  
+  # Data formats
+  - openpyxl
+  - xlsxwriter
+  - pytables
+  - pyarrow
+  
+  # Development tools
+  - pytest
+  - pytest-cov
+  - black
+  - flake8
+  - mypy
+  - pre-commit
+  
+  # System utilities
+  - make
+  - git
+  
+  # Pip dependencies (not available through conda)
+  - pip
+  - pip:
+    # Data validation
+    - pandera>=0.13.0
+    
+    # Configuration management
+    - python-dotenv>=1.0.0
+    - pydantic>=2.0.0
+    - pydantic-settings>=2.0.0
+    
+    # Logging
+    - loguru>=0.7.0
+    
+    # Interactive dashboards
+    - streamlit>=1.28.0
+    - dash>=2.14.0
+    
+    # Report generation
+    - jinja2>=3.0.0
+    - weasyprint>=59.0
+    - fpdf2>=2.7.0

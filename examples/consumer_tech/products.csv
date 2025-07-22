@@ -1,0 +1,11 @@
+product_id,plan_name,plan_type
+prod_monthly_std,Standard Streaming,Monthly
+prod_annual_std,Standard Streaming,Annual
+prod_monthly_prm,Premium Streaming,Monthly
+prod_annual_prm,Premium Streaming,Annual
+prod_monthly_fam,Family Plan,Monthly
+prod_annual_fam,Family Plan,Annual
+prod_monthly_bndl,Streaming + Music Bundle,Monthly
+prod_annual_bndl,Streaming + Music Bundle,Annual
+prod_student,Student Plan,Annual
+prod_basic,Basic (With Ads),Monthly

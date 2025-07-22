@@ -1,0 +1,14 @@
+language = "Sql"
+analysis_type = "Patient Average Length of Stay"
+description = "Calculates the average length of stay for patients by department."
+
+[[dataset]]
+name = "admissions"
+description = "Patient admission and discharge records."
+sample_data_path = "examples/healthcare/sample_data.csv"
+
+[[metric]]
+name = "avg_length_of_stay"
+logic = "First, calculate the length of stay in days for each patient (discharge_date - admission_date). Then, find the average of this duration, grouped by department."
+aggregation = "Avg"
+aggregation_field = "length_of_stay" # The LLM will need to generate this column.

@@ -1,0 +1,20 @@
+language = "Python"
+analysis_type = "Time Series Price Forecasting"
+description = "Forecasts daily Bitcoin prices for the next year."
+
+[[dataset]]
+name = "stock_prices"
+description = "Historical daily price data for Bitcoin (BTC)."
+sample_data_path = "examples/finance/sample_data.csv"
+
+[[metric]]
+name = "moving_average"
+logic = "Calculate a 90-day moving average of the closing price. Plot this on the same chart as the raw daily closing price for comparison."
+aggregation = "Avg" # Placeholder
+aggregation_field = "moving_average" # The LLM will need to create this intermediate field.
+
+[[metric]]
+name = "forecasted_price"
+logic = "Using a SARIMA model, forecast the daily closing price 1 year into the future. The final output should include the 95% confidence interval bands."
+aggregation = "Avg" # Placeholder
+aggregation_field = "forecast" # The LLM will need to create this intermediate field.

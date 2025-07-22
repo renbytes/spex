@@ -1,0 +1,62 @@
+# This is the configuration file for the spec-driven DSL generator.
+# This example showcases a complex, multi-table, multi-metric analysis.
+# Fill in the details below and then run `specds generate --spec spec.toml`
+
+language = "Pyspark"
+analysis_type = "Subscription Attribution"
+description = "User signup flow"
+
+# --- Data Source Specification ---
+# Define the three input datasets for our analysis.
+[[dataset]]
+name = "app_events"
+description = "Raw user engagement events, including ad impressions and clicks."
+sample_data_path = "examples/consumer_tech/app_events.csv"
+
+[[dataset]]
+name = "signups"
+description = "Subscription signup events, including organic and potentially attributed signups."
+sample_data_path = "examples/consumer_tech/signups.csv"
+
+[[dataset]]
+name = "products"
+description = "Product metadata mapping product_id to plan names."
+sample_data_path = "examples/consumer_tech/products.csv"
+
+# --- Metric Specification ---
+# Define the six metrics we want to calculate for the full funnel.
+[[metric]]
+name = "total_ad_impressions"
+logic = "A simple count of events from the engagements table where event_name is 'ad_impression'."
+aggregation = "Count"
+aggregation_field = "event_name"
+
+[[metric]]
+name = "total_ad_clicks"
+logic = "A simple count of events from the engagements table where event_name is 'ad_click'."
+aggregation = "Count"
+aggregation_field = "event_name"
+
+[[metric]]
+name = "total_signups"
+logic = "A simple count of all rows in the signups table."
+aggregation = "Count"
+aggregation_field = "user_id"
+
+[[metric]]
+name = "attributed_signups"
+logic = "The core attribution logic. For each signup, find the most recent 'ad_click' event from the same user that occurred *before* the signup_timestamp. If such a click exists, the signup is attributed. Count the distinct attributed user_ids."
+aggregation = "CountDistinct"
+aggregation_field = "user_id"
+
+[[metric]]
+name = "click_to_signup_rate"
+logic = "The percentage of total ad clicks that resulted in an attributed signup. Calculated as (attributed_signups / total_ad_clicks) * 100."
+aggregation = "Avg" # Placeholder, the core logic is in the description.
+aggregation_field = "click_to_signup_rate"
+
+[[metric]]
+name = "attributed_signups_by_plan"
+logic = "Join the attributed signups with the products table on product_id. Then, count the number of attributed signups for each human-readable product plan (e.g., 'Annual Streaming', 'Monthly Streaming')."
+aggregation = "Count"
+aggregation_field = "plan_name"

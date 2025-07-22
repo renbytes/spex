@@ -1,0 +1,132 @@
+{#
+  Enhanced Tera template for generating a comprehensive PySpark data science product.
+  This generates a complete, production-grade big data analytics pipeline with a single-pass
+  aggregation pattern, visualizations, and data quality checks.
+#}
+You are an expert-level big data engineering and PySpark code generator. ourtask is to write a complete, production-grade, and tested PySpark analytics pipeline based on the user's specifications.
+
+Adhere to the following principles STRICTLY:
+
+### CRITICAL RULES ###
+1.  **DO NOT** output any conversational text, explanations, apologies, or introductory sentences.
+2.  ourresponse **MUST** begin directly with `### FILE: job.py` and nothing else.
+3.  **LAZY EVALUATION & SINGLE ACTION:** All functions in `functions.py` **MUST** return a DataFrame (a transformation) and **MUST NOT** trigger any Spark actions (like `.count()`, `.collect()`, `.agg()`, `.first()`, `.show()`). The one and only action should be in `job.py` when writing the final results.
+4.  **NO DRIVER-SIDE CALCULATIONS:** All data manipulation and calculations **MUST** be done within the Spark DataFrame API using `pyspark.sql.functions`. Do not pull data to the driver to perform calculations in Python.
+5.  **UNIFIED AGGREGATION:** You **MUST** perform all aggregations in a single `groupBy().agg()` call. Do not calculate metrics in separate DataFrames and join them.
+
+### ARCHITECTURAL PRINCIPLES ###
+- **COMPREHENSIVE BIG DATA PRODUCT:** Generate a complete distributed data science pipeline including:
+    * **Map-Reduce Architecture:** Binary indicator mapping followed by unified aggregation.
+    * **Scalable Processing:** Efficient Spark operations with proper partitioning and caching.
+    * **Rich Visualizations:** Charts optimized for big data (sampling, aggregation).
+    * **Data Quality at Scale:** Distributed validation and profiling.
+    * **Configuration Management:** Spark configuration and cluster settings.
+    * **Comprehensive Testing:** Unit tests with Spark test utilities.
+- **SPARK BEST PRACTICES:**
+    * **Single-Pass Aggregation:** Use a single `groupBy().agg()` to compute all metrics at once.
+    * **Unified Output:** Produce one final DataFrame containing all computed metrics.
+    * **Scalable Design:** Ensure new metrics can be added easily without changing the core aggregation logic.
+    * **Separation of Concerns:** Each file must have a single, clear responsibility.
+    * **Performance Optimization:** Use efficient joins, broadcasting, and partitioning where appropriate.
+
+---
+### USER SPECIFICATION ###
+---
+
+Target Language: {{ spec.language }}
+Analysis Type: {{ spec.analysis_type }}
+Job Description: {{ spec.description }}
+
+Input Datasets:
+{% for dataset in spec.datasets %}
+- **Dataset Name:** `{{ dataset.name }}`
+  - **Description:** {{ dataset.description }}
+  - **Schema / Sample Data:**
+    ```
+    {{ dataset.schema_or_sample }}
+    ```
+{% endfor %}
+
+Metrics & Logic:
+{% for metric in spec.metrics %}
+- **Metric Name:** `{{ metric.name }}`
+  - **Business Logic:** {{ metric.logic }}
+  - **Aggregation:** {{ metric.aggregation }} on field `{{ metric.aggregation_field }}`
+{% endfor %}
+
+---
+### CODE GENERATION TASK ###
+---
+
+Generate a complete, sophisticated PySpark big data pipeline by following these steps:
+
+**1. DEVISE A PLAN:**
+   - Before writing code, think step-by-step to create a logical plan to solve the user's specific problem.
+   - This plan must resolve all complex logic (like attribution, time series analysis, etc.) through a series of transformations before the final aggregation.
+   - The plan MUST adhere to all the CRITICAL RULES and ARCHITECTURAL PRINCIPLES defined above.
+   - Include this plan as a high-level comment in the `functions.py` file.
+
+**2. GENERATE THE FILES:**
+   - Implement the plan you devised across the required files.
+
+### FILE: job.py
+
+```python
+# Main PySpark job orchestration script.
+# Should include: Spark session management, data loading, calling the main analysis function,
+# and triggering the single, final action to write the results.
+```
+
+### FILE: functions.py
+
+```python
+# Core PySpark business logic.
+# Start with a high-level comment block outlining ourstep-by-step plan.
+# Implement the plan using a series of transformation-only functions.
+# The final function should return a single DataFrame ready for the final aggregation action.
+# All functions MUST return a DataFrame and MUST NOT trigger any Spark actions.
+# Every function must have comprehensive docstrings and type hints.
+```
+
+### FILE: data_validation.py
+
+```python
+# Data quality and validation functions optimized for Spark.
+# These should also be transformations that return a DataFrame, adding quality-check columns.
+```
+
+### FILE: visualizations.py
+
+```python
+# Visualization functions optimized for big data.
+# These functions will be run after the main job and will load the final, aggregated results
+# (which are small) to create plots.
+```
+
+### FILE: spark_config.py
+
+```python
+# Spark configuration management and session optimization.
+# Include functions to build a performance-tuned SparkSession.
+```
+
+### FILE: config.py
+
+```python
+# General configuration management for file paths and parameters.
+# Use pydantic-settings for type-safe configuration.
+```
+
+### FILE: tests/test_functions.py
+
+```python
+# Comprehensive unit tests for PySpark functions using a local Spark context.
+# Test each function from ourplan independently.
+```
+
+### FILE: tests/test_job.py
+
+```python
+# End-to-end integration test for the complete PySpark pipeline.
+# Mocks the input data sources and validates the final, aggregated output.
+```

@@ -1,0 +1,13 @@
+total_ad_impressions,total_ad_clicks,total_signups,attributed_signups,plan_name,plan_type,metric_level,attributed_signups_by_plan,click_to_signup_rate
+96,49,0,0,,,By Plan,0,0.0
+0,0,4,4,Standard Streaming,Annual,By Plan,4,0.0
+0,0,6,4,Standard Streaming,Monthly,By Plan,4,0.0
+0,0,2,2,Streaming + Music Bundle,Monthly,By Plan,2,0.0
+0,0,7,6,Family Plan,Monthly,By Plan,6,0.0
+0,0,6,6,Streaming + Music Bundle,Annual,By Plan,6,0.0
+0,0,1,0,Family Plan,Annual,By Plan,0,0.0
+0,0,7,7,Student Plan,Annual,By Plan,7,0.0
+0,0,6,6,Premium Streaming,Annual,By Plan,6,0.0
+0,0,4,4,Premium Streaming,Monthly,By Plan,4,0.0
+0,0,7,7,Basic (With Ads),Monthly,By Plan,7,0.0
+96,49,50,46,Global Total,Global Total,Global Total,,93.87755102040816

@@ -1,0 +1,102 @@
+import jinja2
+import os
+from typing import Dict, Any
+
+def generate_html_report(template_name: str, context: Dict[str, Any], output_path: str):
+    """Generates an HTML report from a Jinja2 template.
+
+    Args:
+        template_name: The name of the template file.
+        context: A dictionary of variables to pass to the template.
+        output_path: The path to save the generated HTML file.
+    """
+    # Create a templates directory if it doesn't exist
+    template_dir = os.path.join(os.path.dirname(__file__), "templates")
+    os.makedirs(template_dir, exist_ok=True)
+    
+    template_path = os.path.join(template_dir, template_name)
+    
+    # Define a basic template if one doesn't exist
+    if not os.path.exists(template_path):
+        default_template = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ report_title }}</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; line-height: 1.6; color: #333; max-width: 1200px; margin: 20px auto; padding: 0 20px; background-color: #f8f9fa; }
+        .container { background-color: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1, h2 { color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px; }
+        h1 { font-size: 2.5em; }
+        h2 { font-size: 1.8em; margin-top: 40px;}
+        .summary { background-color: #e9f5ff; border-left: 5px solid #0056b3; padding: 20px; margin: 20px 0; border-radius: 5px; }
+        .metrics { display: flex; justify-content: space-around; text-align: center; margin: 30px 0; }
+        .metric { background-color: #f1f3f5; padding: 20px; border-radius: 8px; width: 30%; }
+        .metric h3 { margin-top: 0; color: #555; }
+        .metric p { font-size: 2em; font-weight: bold; color: #004085; margin: 0; }
+        img { max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px; margin-top: 20px; }
+        iframe { width: 100%; height: 500px; border: 1px solid #ddd; border-radius: 4px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>{{ report_title }}</h1>
+
+        <h2>Executive Summary</h2>
+        <div class="summary">
+            <p>
+                This report presents a time series forecast for the daily price of Bitcoin (BTC) for the next 
+                <strong>{{ forecast_horizon }} days</strong>. The analysis is based on historical price data,
+                utilizing a SARIMA (Seasonal AutoRegressive Integrated Moving Average) model to generate the forecast.
+                The model parameters used were <strong>SARIMA{{ sarima_order }}</strong> with a seasonal component of 
+                <strong>{{ sarima_seasonal_order }}</strong>. A <strong>{{ ma_window }}-day moving average</strong> 
+                was also calculated to smooth out price volatility and identify trends.
+            </p>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric">
+                <h3>Last Recorded Price</h3>
+                <p>{{ last_actual_price }}</p>
+            </div>
+            <div class="metric">
+                <h3>Final Forecast Price (in {{ forecast_horizon }} days)</h3>
+                <p>{{ final_forecast_price }}</p>
+            </div>
+        </div>
+
+        <h2>Interactive Forecast Visualization</h2>
+        <p>
+            The following chart displays the historical price, the forecasted price, and the 95% confidence interval. 
+            You can hover over the chart to see specific values, and zoom in to examine periods of interest.
+        </p>
+        <iframe src="{{ forecast_plot_path }}"></iframe>
+
+        <h2>Historical Price vs. Moving Average</h2>
+        <p>This chart compares the daily closing price against its {{ ma_window }}-day moving average.</p>
+        <img src="{{ price_ma_plot_path }}" alt="Price vs. Moving Average">
+        
+        <h2>Time Series Decomposition</h2>
+        <p>The time series was decomposed to reveal its underlying trend, seasonality, and residual components.</p>
+        <img src="{{ decomposition_plot_path }}" alt="Time Series Decomposition">
+
+        <h2>SARIMA Model Diagnostics</h2>
+        <p>These plots help assess the quality of the SARIMA model fit. The residuals should ideally be uncorrelated and normally distributed.</p>
+        <img src="{{ diagnostics_plot_path }}" alt="Model Diagnostics">
+
+    </div>
+</body>
+</html>
+"""
+        with open(template_path, 'w') as f:
+            f.write(default_template)
+
+    environment = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir))
+    template = environment.get_template(template_name)
+    
+    html_content = template.render(context)
+    
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(html_content)

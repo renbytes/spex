@@ -2,7 +2,7 @@ import ArgumentParser
 
 
 /// A command to create a default `spec.toml` file in the current directory.
-struct InitCommand: AsyncParsableCommand { // Changed to AsyncParsableCommand
+struct InitCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "init",
         abstract: "Create a default spec.toml file in the current directory."
@@ -10,9 +10,9 @@ struct InitCommand: AsyncParsableCommand { // Changed to AsyncParsableCommand
 
     /// The main execution method for the command. It delegates the core logic
     /// to the `AppOrchestrator`.
-    func run() async throws { // Added 'async' keyword
+    func run() async throws { 
         let orchestrator = AppOrchestrator()
-        try await orchestrator.runInit() // Added 'await' keyword
+        try await orchestrator.runInit()
     }
 }
 

@@ -8,8 +8,8 @@ struct Spex: AsyncParsableCommand {
         // The abstract is a single-line summary that appears in the OVERVIEW section.
         abstract: "A spec-driven data-science pipeline generator powered by large language models.",
         subcommands: [
-            InitCommand.self
             GenerateCommand.self,
+            InitCommand.self
         ],
         defaultSubcommand: GenerateCommand.self
     )

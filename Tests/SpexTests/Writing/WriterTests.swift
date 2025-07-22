@@ -25,8 +25,7 @@ final class WriterTests: XCTestCase {
             analysisType: "Simple Test",
             description: "A test of the writer.",
             datasets: [],
-            metrics: [],
-            sourceName: "test"
+            metrics: []
         )
         
         let mockLlmOutput = """

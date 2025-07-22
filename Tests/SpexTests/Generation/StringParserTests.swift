@@ -28,8 +28,7 @@ final class StringParserTests: XCTestCase {
                     aggregation: .count,
                     aggregationField: "id"
                 )
-            ],
-            sourceName: "test_source"
+            ]
         )
         
         // ACT

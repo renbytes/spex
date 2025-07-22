@@ -1,12 +1,37 @@
-.DS_Store
-/.build
-/Packages
+# Swift Package Manager
+# Keep Package.resolved to ensure reproducible builds
+.build/
+Packages/
+.swiftpm/
+
+# Xcode
+# User-specific settings
 xcuserdata/
+*.xcuserdatad
+
+# Build products
 DerivedData/
-.swiftpm/configuration/registries.json
-.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
-.netrc
+
+# Generated Output
+# Ignore the directory containing generated data science projects
+/generated_jobs/
+
+# Environment & Credentials
+# Never commit environment variables or credentials
 .env
-all_code.txt
+.netrc
+
+# IDE & Editor Files
+# User-specific settings for editors like VS Code
 .vscode/
-Package.resolved
+*.swp
+*.swo
+
+# macOS System Files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Temporary Files
+# Any temporary or local-only files
+all_code.txt

@@ -1,5 +1,3 @@
-// file: Tests/SpexTests/GeneratorTests.swift
-
 import XCTest
 @testable import Spex
 
@@ -21,6 +19,7 @@ final class GeneratorTests: XCTestCase {
     /// based on the language specified in the `Specification`.
     func testGenerateUsesCorrectTemplate() async throws {
         // ARRANGE
+        // The Specification is now a pure data model, making it easy to create in memory.
         let spec = Specification(
             language: "pyspark",
             analysisType: "Test Analysis",
@@ -33,8 +32,7 @@ final class GeneratorTests: XCTestCase {
                     aggregation: .count,
                     aggregationField: "id"
                 )
-            ],
-            sourceName: "test_source"
+            ]
         )
         
         let mockClient = MockLlmClient()

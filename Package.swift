@@ -17,6 +17,7 @@ let package = Package(
         .package(url: "https://github.com/vapor/vapor.git", from: "4.115.1"),
         .package(url: "https://github.com/LebJe/TOMLKit", from: "0.6.0"),
         .package(url: "https://github.com/swiftpackages/DotEnv.git", from: "3.0.0"),
+        .package(url: "https://github.com/dfreniche/SwiftFiglet", from: "0.2.1"),
         ],
             targets: [
                 .executableTarget(
@@ -26,7 +27,8 @@ let package = Package(
                         "Rainbow",
                         .product(name: "Vapor", package: "vapor"),
                         .product(name: "TOMLKit", package: "TOMLKit"),
-                        .product(name: "DotEnv", package: "DotEnv")
+                        .product(name: "DotEnv", package: "DotEnv"),
+                        .product(name: "SwiftFigletKit", package: "swiftfiglet")
                     ]
                 ),
                 .testTarget(

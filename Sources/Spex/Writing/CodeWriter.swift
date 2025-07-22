@@ -48,7 +48,7 @@ struct CodeWriter {
         try parseAndWriteFiles(rawOutput, to: outputDir)
         try createProjectInfrastructure(in: outputDir, for: spec)
         
-        print("\n✅ Successfully generated sophisticated data product!".green.bold)
+        print("\n✅ Successfully generated our project!".green.bold)
         print("📁 Location: \(outputDir.path)".cyan)
         printNextSteps(for: spec, in: outputDir)
     }

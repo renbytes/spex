@@ -1,6 +1,7 @@
 import ArgumentParser
 import Vapor
 import DotEnv
+import Foundation
 
 /// Root command that exposes all Spex sub‑commands.
 struct Spex: AsyncParsableCommand {
@@ -33,20 +34,19 @@ struct EntryPoint {
             _ = try Environment.detect()
         } catch {
             // If setup fails, print the error and exit.
-            print("Error during application setup: \(error.localizedDescription)".red)
-            Spex.exit(withError: error)
+            Logger.log("During application setup: \(error.localizedDescription)", type: .error)
+            Foundation.exit(1)
         }
 
         // --- 2. Command Parsing ---
         // This block handles parsing errors (e.g., --help, missing arguments).
-        // These are the cases where we want to show the banner.
         var command: ParsableCommand
         do {
             command = try Spex.parseAsRoot()
         } catch {
             // A parsing error occurred. Print the banner first.
             print(Banner.make())
-            print() // Add a newline for spacing.
+            print()
             
             // Then, let ArgumentParser handle printing the specific error
             // message, help text, and exiting.
@@ -55,17 +55,19 @@ struct EntryPoint {
 
         // --- 3. Command Execution ---
         // This block handles runtime errors from our application logic (e.g., AppError).
-        // We do NOT want the banner for these errors.
         do {
-            // We must check if the parsed command is async and run it accordingly.
             if var asyncCommand = command as? AsyncParsableCommand {
                 try await asyncCommand.run()
             } else {
                 try command.run()
             }
         } catch {
-            // A runtime error occurred. Just let ArgumentParser print the error and exit.
-            Spex.exit(withError: error)
+            // A runtime error occurred. Use our custom logger to print a colored message.
+            Logger.log(error.localizedDescription, type: .error)
+
+            // Exit with the appropriate status code.
+            let exitCode = Spex.exitCode(for: error)
+            Foundation.exit(exitCode.rawValue)
         }
     }
 }

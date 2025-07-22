@@ -2,7 +2,7 @@
 # This example showcases a complex, multi-table, multi-metric analysis.
 # Fill in the details below and then run `specds generate --spec spec.toml`
 
-language = "Pyspark"
+language = "PySpark"
 analysis_type = "Subscription Attribution"
 description = "User signup flow"
 

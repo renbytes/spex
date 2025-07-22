@@ -29,6 +29,12 @@ struct SpecValidator {
             )
         }
 
-        // TODO: Add more validation rules as needed.
+        // Rule 3: Check if the language is a supported enum case.
+        if Language(rawValue: spec.language.lowercased()) == nil {
+            let supportedLanguages = Language.allCases.map { $0.rawValue }.joined(separator: ", ")
+            throw AppError.validationError(
+                "'\(spec.language)' is not a supported language. Please use one of: \(supportedLanguages)."
+            )
+        }
     }
 }

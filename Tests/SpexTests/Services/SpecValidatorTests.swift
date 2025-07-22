@@ -18,11 +18,12 @@ final class SpecValidatorTests: XCTestCase {
 
     /// Creates a mock `Specification` for testing purposes.
     private func createMockSpec(
+        language: String = "python",
         description: String = "A valid description",
         analysisType: String = "A valid type"
     ) -> Specification {
         return Specification(
-            language: "python",
+            language: language,
             analysisType: analysisType,
             description: description,
             datasets: [],
@@ -68,6 +69,30 @@ final class SpecValidatorTests: XCTestCase {
                 return XCTFail("Expected AppError.validationError")
             }
             XCTAssertTrue(message.contains("analysis_type' field is too long"))
+        }
+    }
+
+    /// Tests that a spec with a supported language (case-insensitive) passes validation.
+    func testValidate_WithValidLanguage_Succeeds() throws {
+        // ARRANGE
+        let spec = createMockSpec(language: "PySpark") // Test case-insensitivity
+
+        // ACT & ASSERT
+        XCTAssertNoThrow(try validator.validate(spec))
+    }
+
+    /// Tests that the validator throws an error for an unsupported language.
+    func testValidate_WithInvalidLanguage_ThrowsValidationError() {
+        // ARRANGE
+        let spec = createMockSpec(language: "rust")
+
+        // ACT & ASSERT
+        XCTAssertThrowsError(try validator.validate(spec)) { error in
+            guard case .validationError(let message) = error as? AppError else {
+                return XCTFail("Expected AppError.validationError")
+            }
+            XCTAssertTrue(message.contains("is not a supported language"))
+            XCTAssertTrue(message.contains("python, pyspark, sql"))
         }
     }
 }

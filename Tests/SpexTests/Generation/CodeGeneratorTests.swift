@@ -61,7 +61,6 @@ final class GeneratorTests: XCTestCase {
             return
         }
 
-        // You can add other checks as needed.
         XCTAssertTrue(receivedPrompt.contains("Target Language: pyspark"), "The prompt should contain the target language.")
         XCTAssertFalse(receivedPrompt.contains("You are an expert-level data engineering and data science code generator."), "The prompt should not contain text from the generic python template.")
     }

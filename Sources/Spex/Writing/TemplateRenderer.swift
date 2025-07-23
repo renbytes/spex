@@ -100,4 +100,18 @@ struct TemplateRenderer {
         
         return current
     }
+
+    /// Converts a Specification object to a context dictionary suitable for template rendering.
+    /// This is a necessary step before calling the `render` function.
+    static func specificationToContext(_ spec: Specification) throws -> [String: Any] {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        
+        let data = try encoder.encode(spec)
+        guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            throw AppError.templateError("Failed to convert specification to dictionary")
+        }
+        
+        return ["spec": json]
+    }
 }

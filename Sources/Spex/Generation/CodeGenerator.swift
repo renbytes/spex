@@ -46,15 +46,15 @@ struct CodeGenerator {
     /// This method executes the code generation workflow:
     /// 1. Constructs the path to the correct template file based on the language.
     /// 2. Loads the template content from disk.
-    /// 3. Creates a context dictionary from the `Specification`.
-    /// 4. Renders the template using our StringParser, producing the final prompt string.
+    /// 3. Converts the `Specification` object into a dictionary for the template.
+    /// 4. Renders the template using `TemplateRenderer`, producing the final prompt string.
     /// 5. Calls the `llmClient` with the generated prompt and the specified model.
     ///
     /// - Parameters:
     ///   - spec: The fully-populated `Specification` containing user requirements.
     ///   - model: The name of the model to use for generation.
     /// - Returns: The raw string response from the LLM.
-    /// - Throws: An `AppError` if template loading, rendering, or the LLM call fails.
+    /// - Throws: An `AppError` if any step fails.
     func generate(spec: Specification, model: String) async throws -> String {
         let templatePath = templatesURL.appendingPathComponent("\(spec.language.lowercased())/prompt_templates/default.tera")
         
@@ -65,15 +65,18 @@ struct CodeGenerator {
             throw AppError.templateError("Failed to load template from '\(templatePath.path)': \(error.localizedDescription)")
         }
         
+        // The context is the dictionary that holds all the data for the template.
         let context: [String: Any]
         do {
-            context = try StringParser.specificationToContext(spec)
+            context = try TemplateRenderer.specificationToContext(spec)
         } catch {
             throw AppError.templateError("Failed to prepare spec for template context: \(error.localizedDescription)")
         }
         
+        // Render the final prompt string using the template and its context.
         let prompt = try TemplateRenderer.render(template: templateContent, context: context)
 
+        // Send the complete prompt to the LLM for code generation.
         return try await llmClient.generateCode(prompt: prompt, model: model)
     }
 }

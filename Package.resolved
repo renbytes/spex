@@ -1,5 +1,5 @@
 {
-  "originHash" : "1585005222b1f63b1919d57201ebc19171678a328500ed3861e4d8f6452aac9c",
+  "originHash" : "aa07ea8a92e74b8efd85f18a46201bc571182b92dcc788dcc812616ea689dc3f",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -260,6 +260,15 @@
       "state" : {
         "revision" : "61e4ca4b81b9e09e2ec863b00c340eb13497dac6",
         "version" : "1.5.0"
+      }
+    },
+    {
+      "identity" : "swiftcsv",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftcsv/SwiftCSV.git",
+      "state" : {
+        "revision" : "6ab5d0fe9b6ef3c79d717eefa70862df389e74d9",
+        "version" : "0.10.0"
       }
     },
     {

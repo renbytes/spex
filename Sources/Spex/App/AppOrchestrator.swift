@@ -37,7 +37,7 @@ final actor AppOrchestrator {
                 options: choices
             )
             provider = LlmProvider(rawValue: chosenProviderName.lowercased()) ?? .openai
-            print() // Add a newline for better spacing after the prompt
+            print() // Better spacing after the prompt
         }
 
         let model: String
@@ -62,7 +62,6 @@ final actor AppOrchestrator {
         }
 
         // --- 4. Load and Validate Specification ---
-        // Fixed API Call: Use Noora() instance for progress steps
         let noora = Noora()
         var spec: Specification = try await noora.progressStep(message: "Loading and validating specification") { _ in
             let specLoader = SpecLoader()
@@ -215,5 +214,201 @@ final actor AppOrchestrator {
         aggregation = "CountDistinct"
         aggregation_field = "user_id"
         """
+    }
+}
+
+// MARK: - Interactive Mode Extension
+
+extension AppOrchestrator {
+    
+    /// Runs an interactive session to help users get started
+    func runInteractive() async throws {
+        let noora = Noora()
+        
+        // Show the ASCII art first
+        print(Banner.make())
+        print()
+        
+        // Welcome message
+        print("👋 Welcome to Spex!".bold)
+        print("   Your AI-powered data pipeline generator\n".dim)
+        
+        // Check if there's already a spec.toml in the current directory
+        let fileManager = FileManager.default
+        let currentDir = fileManager.currentDirectoryPath
+        let specPath = "\(currentDir)/spec.toml"
+        let hasExistingSpec = fileManager.fileExists(atPath: specPath)
+        
+        // Ask what they want to do
+        let startProject = noora.singleChoicePrompt(
+            title: "Getting Started",
+            question: hasExistingSpec ? 
+                "Found an existing spec.toml in this directory. What would you like to do?" :
+                "Would you like to start a new project?",
+            options: hasExistingSpec ? 
+                ["Use existing spec.toml", "Create new spec.toml", "Exit"] :
+                ["Yes", "No"]
+        )
+        
+        if startProject == "No" || startProject == "Exit" {
+            print("\n👋 See you later! Run 'spex --help' to see available commands.\n".dim)
+            return
+        }
+        
+        if hasExistingSpec && startProject == "Use existing spec.toml" {
+            // Proceed with existing spec
+            print("\n🚀 Great! Let's generate your pipeline using the existing spec.toml\n".green)
+            
+            // Create default arguments for generate command
+            var args = GenerateCommand.Arguments()
+            args.spec = specPath
+            
+            try await runGenerate(args: args)
+            return
+        }
+        
+        // If we're here, user wants to create a new spec
+        if hasExistingSpec {
+            // Ask if they want to overwrite
+            let overwrite = noora.singleChoicePrompt(
+                title: "Overwrite Confirmation",
+                question: "This will overwrite the existing spec.toml. Continue?",
+                options: ["Yes, overwrite", "No, cancel"]
+            )
+            
+            if overwrite == "No, cancel" {
+                print("\n✅ Cancelled. Your existing spec.toml is unchanged.\n".yellow)
+                return
+            }
+            
+            // Delete the existing file
+            try? fileManager.removeItem(atPath: specPath)
+        }
+        
+        // Guide them through creating a spec
+        print("\n📝 Let's create your spec.toml file!\n".cyan)
+        
+        // Ask about the type of analysis
+        let analysisType = noora.textPrompt(
+            title: "Project Setup",
+            prompt: "What type of analysis are you building? (e.g., Ad Attribution, User Segmentation, Revenue Analysis)",
+            description: "This helps the AI understand your use case"
+        )
+        
+        // Ask about input datasets
+        print("\n📊 Now let's define your input datasets.".cyan)
+        print("   You'll need at least one dataset to analyze.\n".dim)
+        
+        var datasets: [(name: String, description: String)] = []
+        var addingDatasets = true
+        
+        while addingDatasets {
+            let datasetName = noora.textPrompt(
+                title: "Dataset \(datasets.count + 1)",
+                prompt: "Dataset name: (e.g., engagements, signups, transactions)"
+            )
+            
+            let datasetDesc = noora.textPrompt(
+                prompt: "Brief description: What does this dataset contain?"
+            )
+            
+            datasets.append((name: datasetName, description: datasetDesc))
+            
+            if datasets.count >= 1 {
+                let addMore = noora.singleChoicePrompt(
+                    question: "Add another dataset?",
+                    options: ["Yes", "No"]
+                )
+                addingDatasets = (addMore == "Yes")
+            }
+        }
+        
+        // Create the spec.toml with user's inputs
+        let customSpec = createCustomSpec(
+            analysisType: analysisType.isEmpty ? "Ad-Attributed Subscriptions" : analysisType,
+            datasets: datasets
+        )
+        
+        // Write the file
+        let fileURL = URL(fileURLWithPath: specPath)
+        try customSpec.write(to: fileURL, atomically: true, encoding: String.Encoding.utf8)
+        
+        print("\n✨ Successfully created spec.toml!".green.bold)
+        print("   Location: \(specPath.cyan)")
+        
+        // Ask if they want to generate now
+        let generateNow = noora.singleChoicePrompt(
+            title: "\nNext Steps",
+            question: "Would you like to generate your pipeline now?",
+            options: ["No, I'll edit the spec first", "Yes, generate now"]
+        )
+        
+        if generateNow == "Yes, generate now" {
+            print("\n🚀 Generating your pipeline...\n".green)
+            
+            var args = GenerateCommand.Arguments()
+            args.spec = specPath
+            
+            try await runGenerate(args: args)
+        } else {
+            print("\n✅ Your spec.toml has been created!".green)
+            print("\n   Next steps:".bold)
+            print("   1. Edit your spec.toml to add sample data paths")
+            print("   2. Define any output datasets or metrics")
+            print("   3. Run: spex generate --spec spec.toml".cyan)
+            print("\n   💡 Tip: Check the examples/ directory for inspiration!\n".dim)
+        }
+    }
+    
+    /// Creates a custom spec.toml content based on user inputs
+    private func createCustomSpec(analysisType: String, datasets: [(name: String, description: String)]) -> String {
+        var spec = """
+        # spec.toml
+        language = "pyspark"
+        analysis_type = "\(analysisType)"
+        description = "Analyzes \(datasets.map { $0.name }.joined(separator: ", ")) data for \(analysisType.lowercased())."
+        
+        """
+        
+        // Add datasets
+        for dataset in datasets {
+            spec += """
+            
+            [[dataset]]
+            name = "\(dataset.name)"
+            description = "\(dataset.description)"
+            # TODO: Add your sample data path
+            # sample_data_path = "path/to/\(dataset.name).csv"
+            # Or use inline sample data:
+            # sample_data_block = \"\"\"
+            # column1,column2,column3
+            # value1,value2,value3
+            # \"\"\"
+            
+            """
+        }
+        
+        // Add a sample output dataset
+        spec += """
+        
+        # Define your expected output dataset(s)
+        [[output_dataset]]
+        name = "analysis_results"
+        description = "Results from \(analysisType.lowercased()) analysis"
+        # TODO: Add sample output to guide the AI
+        # sample_data_block = \"\"\"
+        # result_column1,result_column2
+        # example1,example2
+        # \"\"\"
+        
+        # Define metrics to calculate (optional)
+        # [[metric]]
+        # name = "total_count"
+        # logic = "Count of all records"
+        # aggregation = "Count"
+        # aggregation_field = "id"
+        """
+        
+        return spec
     }
 }

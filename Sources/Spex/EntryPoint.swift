@@ -3,7 +3,7 @@ import Vapor
 import DotEnv
 import Foundation
 
-/// Root command that exposes all Spex sub‑commands.
+/// Root command that exposes all Spex sub‐commands.
 struct Spex: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         // The abstract is a single-line summary that appears in the OVERVIEW section.
@@ -16,7 +16,7 @@ struct Spex: AsyncParsableCommand {
     )
 }
 
-/// Application entry‑point.
+/// Application entry‐point.
 @main
 struct EntryPoint {
     static func main() async {
@@ -38,7 +38,20 @@ struct EntryPoint {
             Foundation.exit(1)
         }
 
-        // --- 2. Command Parsing ---
+        // --- 2. Check for Interactive Mode ---
+        // If the user just types "spex" with no arguments, enter interactive mode
+        if CommandLine.arguments.count == 1 {
+            do {
+                let orchestrator = AppOrchestrator()
+                try await orchestrator.runInteractive()
+                Foundation.exit(0)
+            } catch {
+                Logger.log(error.localizedDescription, type: .error)
+                Foundation.exit(1)
+            }
+        }
+
+        // --- 3. Command Parsing ---
         // This block handles parsing errors (e.g., --help, missing arguments).
         var command: ParsableCommand
         do {
@@ -53,7 +66,7 @@ struct EntryPoint {
             Spex.exit(withError: error)
         }
 
-        // --- 3. Command Execution ---
+        // --- 4. Command Execution ---
         // This block handles runtime errors from our application logic (e.g., AppError).
         do {
             if var asyncCommand = command as? AsyncParsableCommand {

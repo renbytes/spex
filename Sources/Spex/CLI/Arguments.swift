@@ -20,5 +20,19 @@ extension GenerateCommand {
         /// The specific model to use (e.g., gpt-4o-mini, gemini-1.5-flash).
         @Option(name:.long, help: "The specific LLM model to use for generation.")
         var model: String?
+        
+        /// Manual initializer for programmatic creation
+        init() {
+            self.spec = ""
+            self.provider = nil
+            self.model = nil
+        }
+        
+        /// Memberwise initializer for programmatic creation
+        init(spec: String, provider: LlmProvider? = nil, model: String? = nil) {
+            self.spec = spec
+            self.provider = provider
+            self.model = model
+        }
     }
 }

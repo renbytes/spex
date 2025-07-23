@@ -259,9 +259,8 @@ extension AppOrchestrator {
             // Proceed with existing spec
             print("\n🚀 Great! Let's generate your pipeline using the existing spec.toml\n".green)
             
-            // Create default arguments for generate command
-            var args = GenerateCommand.Arguments()
-            args.spec = specPath
+            // Create arguments manually without using the Arguments struct
+            let args = GenerateCommand.Arguments(spec: specPath, provider: nil, model: nil)
             
             try await runGenerate(args: args)
             return
@@ -340,14 +339,14 @@ extension AppOrchestrator {
         let generateNow = noora.singleChoicePrompt(
             title: "\nNext Steps",
             question: "Would you like to generate your pipeline now?",
-            options: ["No, I'll edit the spec first", "Yes, generate now"]
+            options: ["Yes, generate now", "No, I'll edit the spec first"]
         )
         
         if generateNow == "Yes, generate now" {
             print("\n🚀 Generating your pipeline...\n".green)
             
-            var args = GenerateCommand.Arguments()
-            args.spec = specPath
+            // Create arguments manually without using the Arguments struct
+            let args = GenerateCommand.Arguments(spec: specPath, provider: nil, model: nil)
             
             try await runGenerate(args: args)
         } else {
@@ -370,43 +369,77 @@ extension AppOrchestrator {
         
         """
         
-        // Add datasets
-        for dataset in datasets {
+        // Add datasets with better examples based on common patterns
+        for (index, dataset) in datasets.enumerated() {
+            let exampleData: String
+            
+            // Provide contextual examples based on dataset name
+            if dataset.name.lowercased().contains("event") || dataset.name.lowercased().contains("log") {
+                exampleData = """
+                user_id,event_type,page_id,timestamp,session_id
+                user_001,impression,home_page,2025-01-15T10:00:00Z,session_123
+                user_001,click,home_page,2025-01-15T10:00:05Z,session_123
+                user_002,impression,product_page,2025-01-15T10:01:00Z,session_124
+                """
+            } else if dataset.name.lowercased().contains("user") {
+                exampleData = """
+                user_id,signup_date,plan_type,country
+                user_001,2025-01-01,premium,USA
+                user_002,2025-01-05,basic,UK
+                user_003,2025-01-10,premium,Canada
+                """
+            } else {
+                // Generic example
+                exampleData = """
+                id,name,value,category
+                1,item_a,100,type_1
+                2,item_b,200,type_1
+                3,item_c,150,type_2
+                """
+            }
+            
             spec += """
             
             [[dataset]]
             name = "\(dataset.name)"
             description = "\(dataset.description)"
-            # TODO: Add your sample data path
+            # Option 1: Point to your actual data file
             # sample_data_path = "path/to/\(dataset.name).csv"
-            # Or use inline sample data:
-            # sample_data_block = \"\"\"
-            # column1,column2,column3
-            # value1,value2,value3
-            # \"\"\"
+            
+            # Option 2: Provide inline sample data (recommended for quick start)
+            sample_data_block = \"\"\"
+            \(exampleData)
+            \"\"\"
             
             """
         }
         
-        // Add a sample output dataset
+        // Add a sample output dataset with a reasonable example
         spec += """
         
         # Define your expected output dataset(s)
         [[output_dataset]]
         name = "analysis_results"
-        description = "Results from \(analysisType.lowercased()) analysis"
-        # TODO: Add sample output to guide the AI
-        # sample_data_block = \"\"\"
-        # result_column1,result_column2
-        # example1,example2
-        # \"\"\"
+        description = "Summary results from \(analysisType.lowercased()) analysis"
+        sample_data_block = \"\"\"
+        metric_name,value,percentage
+        total_users,1000,100.0
+        active_users,750,75.0
+        converted_users,150,15.0
+        \"\"\"
         
-        # Define metrics to calculate (optional)
-        # [[metric]]
-        # name = "total_count"
-        # logic = "Count of all records"
-        # aggregation = "Count"
-        # aggregation_field = "id"
+        # Define metrics to calculate (optional but recommended)
+        [[metric]]
+        name = "total_count"
+        logic = "Count all unique records"
+        aggregation = "Count"
+        aggregation_field = "id"
+        
+        [[metric]]
+        name = "unique_users"
+        logic = "Count distinct users in the dataset"
+        aggregation = "CountDistinct"
+        aggregation_field = "user_id"
         """
         
         return spec

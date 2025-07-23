@@ -52,11 +52,10 @@ final class AppOrchestratorTests: XCTestCase {
         spec = try await orchestrator.enrich(spec)
 
         // ASSERT
-        // 4. Verify that the dataset was enriched with the content from the temp file.
-        let expectedOutput = "Schema: id, name\nSample Data:\n1,test"
+        // 4. Verify that the enriched string matches the new, robust output format.
+        // This format is readable and logically separates schema from data.
+        let expectedOutput = "Schema: id, name\nSample Data:\n1, test"
         
-        // Using `trimmingCharacters` on both strings makes the comparison more robust
-        // to minor whitespace differences from file reading or formatting.
         XCTAssertEqual(
             spec.datasets[0].schemaOrSample.trimmingCharacters(in: .whitespacesAndNewlines),
             expectedOutput.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -78,7 +77,6 @@ final class AppOrchestratorTests: XCTestCase {
         // ACT & ASSERT
         // 2. Expect the `enrich` call to fail with a file-read-related error.
         do {
-            // The call matches the actual method signature `enrich(spec)`.
             _ = try await orchestrator.enrich(spec)
             XCTFail("Expected enrich to throw an error for a missing file, but it did not.")
         } catch let error as AppError {

@@ -18,8 +18,6 @@ let package = Package(
         .package(url: "https://github.com/swiftpackages/DotEnv.git", from: "3.0.0"),
         .package(url: "https://github.com/dfreniche/SwiftFiglet", from: "0.2.1"),
         .package(url: "https://github.com/swiftcsv/SwiftCSV.git", from: "0.8.0"),
-        
-        // Dev UX Enhancements
         .package(url: "https://github.com/tuist/Noora.git", from: "0.43.0"),
         .package(url: "https://github.com/jkandzi/Progress.swift.git", from: "0.4.0"),
         .package(url: "https://github.com/JanGorman/Table.git", from: "1.1.1")

@@ -235,7 +235,7 @@ extension AppOrchestrator {
         let noora = Noora()
 
         // Show the ASCII art first
-        print(Banner.make())
+        print(Banner.make().cyan)
         print()
 
         // Welcome message

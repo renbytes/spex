@@ -9,7 +9,7 @@ struct InitCommand: AsyncParsableCommand {
 
     /// The main execution method for the command. It delegates the core logic
     /// to the `AppOrchestrator`.
-    func run() async throws {
+    func run() async throws { 
         let orchestrator = AppOrchestrator()
         try await orchestrator.runInit()
     }
@@ -19,7 +19,14 @@ struct InitCommand: AsyncParsableCommand {
 struct GenerateCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "generate",
-        abstract: "Generate a new analytics pipeline from a specification."
+        abstract: "Generate a new analytics pipeline from a specification.",
+        discussion: """
+            This command reads a spec.toml file and generates a complete, production-ready
+            data analysis pipeline in your chosen language (Python, PySpark, or SQL).
+            
+            Example:
+                spex generate --spec myproject.toml --provider openai
+            """
     )
 
     @OptionGroup

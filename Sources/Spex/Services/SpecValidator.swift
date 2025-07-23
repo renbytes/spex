@@ -8,33 +8,33 @@ import Foundation
 /// in the code generation process.
 struct SpecValidator {
 
-  /// Validates a `Specification` object against a set of business rules.
-  ///
-  /// - Parameter spec: The `Specification` instance to validate.
-  /// - Throws: An `AppError.validationError` if any rule is violated.
-  func validate(_ spec: Specification) throws {
-    // Rule 1: Check description length.
-    let maxDescLen = 50
-    if spec.description.count > maxDescLen {
-      throw AppError.validationError(
-        "The 'description' field is too long. Please keep it under \(maxDescLen) characters (currently \(spec.description.count))."
-      )
-    }
+    /// Validates a `Specification` object against a set of business rules.
+    ///
+    /// - Parameter spec: The `Specification` instance to validate.
+    /// - Throws: An `AppError.validationError` if any rule is violated.
+    func validate(_ spec: Specification) throws {
+        // Rule 1: Check description length.
+        let maxDescLen = 50
+        if spec.description.count > maxDescLen {
+            throw AppError.validationError(
+                "The 'description' field is too long. Please keep it under \(maxDescLen) characters (currently \(spec.description.count))."
+            )
+        }
 
-    // Rule 2: Check analysis type length.
-    let maxTypeLen = 30
-    if spec.analysisType.count > maxTypeLen {
-      throw AppError.validationError(
-        "The 'analysis_type' field is too long. Please keep it under \(maxTypeLen) characters (currently \(spec.analysisType.count))."
-      )
-    }
+        // Rule 2: Check analysis type length.
+        let maxTypeLen = 30
+        if spec.analysisType.count > maxTypeLen {
+            throw AppError.validationError(
+                "The 'analysis_type' field is too long. Please keep it under \(maxTypeLen) characters (currently \(spec.analysisType.count))."
+            )
+        }
 
-    // Rule 3: Check if the language is a supported enum case.
-    if Language(rawValue: spec.language.lowercased()) == nil {
-      let supportedLanguages = Language.allCases.map { $0.rawValue }.joined(separator: ", ")
-      throw AppError.validationError(
-        "'\(spec.language)' is not a supported language. Please use one of: \(supportedLanguages)."
-      )
+        // Rule 3: Check if the language is a supported enum case.
+        if Language(rawValue: spec.language.lowercased()) == nil {
+            let supportedLanguages = Language.allCases.map { $0.rawValue }.joined(separator: ", ")
+            throw AppError.validationError(
+                "'\(spec.language)' is not a supported language. Please use one of: \(supportedLanguages)."
+            )
+        }
     }
-  }
 }

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Spex
 
 /// Unit tests for the `SpecLoader` service.
@@ -35,19 +36,19 @@ final class SpecLoaderTests: XCTestCase {
     func testLoad_WithValidFile_Succeeds() throws {
         // ARRANGE
         let validToml = """
-        language = "python"
-        analysis_type = "Test"
-        description = "A valid test spec"
-        [[dataset]]
-        name = "my_data"
-        description = "Some data"
-        sample_data_path = "path/to/data.csv"
-        [[metric]]
-        name = "my_metric"
-        logic = "Some logic"
-        aggregation = "Count"
-        aggregation_field = "id"
-        """
+            language = "python"
+            analysis_type = "Test"
+            description = "A valid test spec"
+            [[dataset]]
+            name = "my_data"
+            description = "Some data"
+            sample_data_path = "path/to/data.csv"
+            [[metric]]
+            name = "my_metric"
+            logic = "Some logic"
+            aggregation = "Count"
+            aggregation_field = "id"
+            """
         let fileURL = try createTempFile(named: "spec.toml", content: validToml)
         let loader = SpecLoader()
 

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Spex
 
 final class CsvDataParserTests: XCTestCase {
@@ -13,10 +14,10 @@ final class CsvDataParserTests: XCTestCase {
     func testParse_WithValidCsv_Succeeds() {
         // ARRANGE
         let csvString = """
-        id,name,value
-        1,alpha,100
-        2,beta,200
-        """
+            id,name,value
+            1,alpha,100
+            2,beta,200
+            """
 
         // ACT
         let result = parser.parse(from: csvString)
@@ -45,7 +46,7 @@ final class CsvDataParserTests: XCTestCase {
     func testParse_WithEmptyString_ReturnsNil() {
         // ARRANGE
         let emptyString = ""
-        
+
         // ACT
         let result = parser.parse(from: emptyString)
 

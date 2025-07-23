@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Spex
 
 final class SparkAsciiDataParserTests: XCTestCase {
@@ -13,13 +14,13 @@ final class SparkAsciiDataParserTests: XCTestCase {
     func testParse_WithStandardTable_Succeeds() {
         // ARRANGE
         let tableString = """
-        +-------+---+----------------+
-        | name  |age| role           |
-        +-------+---+----------------+
-        | Alice | 29| Data Scientist |
-        | Bob   | 35| Engineer       |
-        +-------+---+----------------+
-        """
+            +-------+---+----------------+
+            | name  |age| role           |
+            +-------+---+----------------+
+            | Alice | 29| Data Scientist |
+            | Bob   | 35| Engineer       |
+            +-------+---+----------------+
+            """
 
         // ACT
         let result = parser.parse(from: tableString)
@@ -50,7 +51,7 @@ final class SparkAsciiDataParserTests: XCTestCase {
     func testParse_WithNonTableString_ReturnsNil() {
         // ARRANGE
         let nonTableString = "This is just a regular sentence."
-        
+
         // ACT
         let result = parser.parse(from: nonTableString)
 

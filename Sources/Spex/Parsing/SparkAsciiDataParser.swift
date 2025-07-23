@@ -17,26 +17,26 @@ import Foundation
 /// +-------+---+----------------+
 /// ```
 struct SparkAsciiDataParser: DataParser {
-  func parse(from rawString: String) -> ParsedSample? {
-    let lines = rawString.split(separator: "\n")
+    func parse(from rawString: String) -> ParsedSample? {
+        let lines = rawString.split(separator: "\n")
 
-    // Isolate only the lines that contain table data, ignoring the decorative lines like "+---+---+"
-    let tableLines = lines.filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("|") }
+        // Isolate only the lines that contain table data, ignoring the decorative lines like "+---+---+"
+        let tableLines = lines.filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("|") }
 
-    guard !tableLines.isEmpty else { return nil }
+        guard !tableLines.isEmpty else { return nil }
 
-    // Helper to split a single line (e.g., "| Alice | 29 |") into an array of cell values (e.g., ["Alice", "29"])
-    let extractCells = { (line: Substring) -> [String] in
-      return line.split(separator: "|")
-        .map { $0.trimmingCharacters(in: .whitespaces) }
-        .filter { !$0.isEmpty }  // Removes empty strings that result from the leading and trailing pipes
+        // Helper to split a single line (e.g., "| Alice | 29 |") into an array of cell values (e.g., ["Alice", "29"])
+        let extractCells = { (line: Substring) -> [String] in
+            return line.split(separator: "|")
+                .map { $0.trimmingCharacters(in: .whitespaces) }
+                .filter { !$0.isEmpty }  // Removes empty strings that result from the leading and trailing pipes
+        }
+
+        let header = extractCells(tableLines[0])
+        let rows = tableLines.dropFirst().map(extractCells)
+
+        if header.isEmpty { return nil }
+
+        return (header, rows)
     }
-
-    let header = extractCells(tableLines[0])
-    let rows = tableLines.dropFirst().map(extractCells)
-
-    if header.isEmpty { return nil }
-
-    return (header, rows)
-  }
 }

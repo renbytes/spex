@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Spex
 
 /// Unit tests for the `DataSourceFactory`.
@@ -15,18 +16,18 @@ final class DataSourceFactoryTests: XCTestCase {
             description: "Test dataset",
             sampleDataPath: "data/test.csv"
         )
-        
+
         // ACT
         let dataSource = DataSourceFactory.makeDataSource(for: dataset)
-        
+
         // ASSERT
         XCTAssertNotNil(dataSource)
         XCTAssertTrue(dataSource is LocalFileDataSource)
-        
+
         // We can't directly test the parser type without exposing it,
         // but we can verify the behavior indirectly
     }
-    
+
     /// Tests that non-CSV files get the delimited parser.
     func testMakeDataSource_WithTxtFile_ReturnsDelimitedParser() {
         // ARRANGE
@@ -35,15 +36,15 @@ final class DataSourceFactoryTests: XCTestCase {
             description: "Test dataset",
             sampleDataPath: "data/test.txt"
         )
-        
+
         // ACT
         let dataSource = DataSourceFactory.makeDataSource(for: dataset)
-        
+
         // ASSERT
         XCTAssertNotNil(dataSource)
         XCTAssertTrue(dataSource is LocalFileDataSource)
     }
-    
+
     /// Tests that datasets with inline blocks get the block data source.
     func testMakeDataSource_WithInlineBlock_ReturnsBlockDataSource() {
         // ARRANGE
@@ -52,15 +53,15 @@ final class DataSourceFactoryTests: XCTestCase {
             description: "Test dataset",
             sampleDataBlock: "id,name\n1,test"
         )
-        
+
         // ACT
         let dataSource = DataSourceFactory.makeDataSource(for: dataset)
-        
+
         // ASSERT
         XCTAssertNotNil(dataSource)
         XCTAssertTrue(dataSource is BlockDataSource)
     }
-    
+
     /// Tests that datasets with neither path nor block return nil.
     func testMakeDataSource_WithNoDataSource_ReturnsNil() {
         // ARRANGE
@@ -68,14 +69,14 @@ final class DataSourceFactoryTests: XCTestCase {
             name: "test",
             description: "Test dataset"
         )
-        
+
         // ACT
         let dataSource = DataSourceFactory.makeDataSource(for: dataset)
-        
+
         // ASSERT
         XCTAssertNil(dataSource)
     }
-    
+
     /// Tests case-insensitive file extension handling.
     func testMakeDataSource_WithUppercaseCsv_ReturnsCsvParser() {
         // ARRANGE
@@ -84,15 +85,15 @@ final class DataSourceFactoryTests: XCTestCase {
             description: "Test dataset",
             sampleDataPath: "data/TEST.CSV"
         )
-        
+
         // ACT
         let dataSource = DataSourceFactory.makeDataSource(for: dataset)
-        
+
         // ASSERT
         XCTAssertNotNil(dataSource)
         XCTAssertTrue(dataSource is LocalFileDataSource)
     }
-    
+
     /// Tests that file path takes precedence over inline block if both are provided.
     func testMakeDataSource_WithBothPathAndBlock_PrefersFilePath() {
         // ARRANGE
@@ -102,10 +103,10 @@ final class DataSourceFactoryTests: XCTestCase {
             sampleDataPath: "data/test.csv",
             sampleDataBlock: "inline data"
         )
-        
+
         // ACT
         let dataSource = DataSourceFactory.makeDataSource(for: dataset)
-        
+
         // ASSERT
         XCTAssertNotNil(dataSource)
         XCTAssertTrue(dataSource is LocalFileDataSource)

@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Spex
 
 /// Unit tests for the `AppOrchestrator`.
@@ -20,7 +21,7 @@ final class AppOrchestratorTests: XCTestCase {
         try FileManager.default.removeItem(at: tempDirectory)
         orchestrator = nil
     }
-    
+
     /// Helper function to create a temporary file with specific content for a test.
     private func createTempFile(named name: String, content: String) throws -> URL {
         let fileURL = tempDirectory.appendingPathComponent(name)
@@ -46,7 +47,7 @@ final class AppOrchestratorTests: XCTestCase {
             metrics: []
         )
         XCTAssertTrue(spec.datasets[0].schemaOrSample.isEmpty)
-        
+
         // ACT
         // 3. Call the real enrich method. It will use its internal factory to read the file.
         spec = try await orchestrator.enrich(spec)
@@ -55,7 +56,7 @@ final class AppOrchestratorTests: XCTestCase {
         // 4. Verify that the enriched string matches the new, robust output format.
         // This format is readable and logically separates schema from data.
         let expectedOutput = "Schema: id, name\nSample Data:\n1, test"
-        
+
         XCTAssertEqual(
             spec.datasets[0].schemaOrSample.trimmingCharacters(in: .whitespacesAndNewlines),
             expectedOutput.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -73,7 +74,7 @@ final class AppOrchestratorTests: XCTestCase {
             datasets: [Dataset(name: "dataset1", description: "", sampleDataPath: "/non/existent/file.csv")],
             metrics: []
         )
-        
+
         // ACT & ASSERT
         // 2. Expect the `enrich` call to fail with a file-read-related error.
         do {

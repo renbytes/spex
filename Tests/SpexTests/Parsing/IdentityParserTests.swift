@@ -1,8 +1,9 @@
 import XCTest
+
 @testable import Spex
 
 final class IdentityParserTests: XCTestCase {
-    
+
     /// Verifies that the IdentityParser always returns nil, regardless of input.
     /// This confirms its behavior as a "pass-through" parser that signals
     /// that no parsing should occur.

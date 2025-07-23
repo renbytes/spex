@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Spex
 
 /// Unit tests for the `SpecValidator` service.
@@ -75,7 +76,7 @@ final class SpecValidatorTests: XCTestCase {
     /// Tests that a spec with a supported language (case-insensitive) passes validation.
     func testValidate_WithValidLanguage_Succeeds() throws {
         // ARRANGE
-        let spec = createMockSpec(language: "PySpark") // Test case-insensitivity
+        let spec = createMockSpec(language: "PySpark")  // Test case-insensitivity
 
         // ACT & ASSERT
         XCTAssertNoThrow(try validator.validate(spec))

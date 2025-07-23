@@ -80,9 +80,21 @@ Explore real-world use cases in the `examples/` directory:
 
 To ensure code quality, run the following commands:
 
-- **Format:** `TBD`
-- **Lint:** `TBD`
-- **Test:** `swift test`
+**Format**
+
+Run:
+```bash
+swift-format -i -r Sources/ Tests/
+```
+
+> Note: you will need to install `swift-lint` if you don't already have it. 
+
+**Test**
+
+Run:
+```bash
+swift test
+```
 
 ### Contributing
 

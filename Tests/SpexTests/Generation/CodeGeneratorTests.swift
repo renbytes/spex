@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Spex
 
 /// A mock `LlmClient` implemented as an actor to handle state in a concurrent environment.
@@ -34,34 +35,38 @@ final class GeneratorTests: XCTestCase {
                 )
             ]
         )
-        
+
         let mockClient = MockLlmClient()
         let generator = try CodeGenerator(llmClient: mockClient)
-        
+
         // ACT
         _ = try await generator.generate(spec: spec, model: "test-model")
-        
+
         // ASSERT
         let promptValue = await mockClient.promptReceived
         let receivedPrompt = try XCTUnwrap(promptValue, "The prompt received by the mock LLM client was nil.")
 
         let expectedPysparkText = "You are an expert-level big data engineering and PySpark code generator."
-        
+
         // Check for the correct PySpark text and fail with a descriptive message if it's missing.
         guard receivedPrompt.contains(expectedPysparkText) else {
-            XCTFail("""
-            The generated prompt did not contain the expected PySpark-specific text.
-            ---
-            EXPECTED TO FIND:
-            "\(expectedPysparkText)"
-            ---
-            RECEIVED PROMPT:
-            "\(receivedPrompt)"
-            """)
+            XCTFail(
+                """
+                The generated prompt did not contain the expected PySpark-specific text.
+                ---
+                EXPECTED TO FIND:
+                "\(expectedPysparkText)"
+                ---
+                RECEIVED PROMPT:
+                "\(receivedPrompt)"
+                """)
             return
         }
 
-        XCTAssertTrue(receivedPrompt.contains("Target Language: pyspark"), "The prompt should contain the target language.")
-        XCTAssertFalse(receivedPrompt.contains("You are an expert-level data engineering and data science code generator."), "The prompt should not contain text from the generic python template.")
+        XCTAssertTrue(
+            receivedPrompt.contains("Target Language: pyspark"), "The prompt should contain the target language.")
+        XCTAssertFalse(
+            receivedPrompt.contains("You are an expert-level data engineering and data science code generator."),
+            "The prompt should not contain text from the generic python template.")
     }
 }

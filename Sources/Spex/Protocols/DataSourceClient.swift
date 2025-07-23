@@ -6,20 +6,20 @@
 /// safely across actor boundaries.
 protocol DataSourceClient: Sendable {
 
-  /// Connects to the data source.
-  ///
-  /// This method should establish and verify the connection to the underlying data source.
-  /// - Throws: An `AppError` if the connection fails.
-  func connect() async throws
+    /// Connects to the data source.
+    ///
+    /// This method should establish and verify the connection to the underlying data source.
+    /// - Throws: An `AppError` if the connection fails.
+    func connect() async throws
 
-  /// Fetches the schema and a small sample of data from a given table or collection.
-  ///
-  /// The implementation should return a formatted string containing both the column
-  /// names/types (schema) and a few sample rows. This combined string provides
-  /// essential context for the LLM prompt.
-  ///
-  /// - Parameter tableName: The name of the table or data entity to inspect.
-  /// - Returns: A formatted string containing the schema and sample data.
-  /// - Throws: An `AppError` if the query fails.
-  func fetchSchemaAndSample(tableName: String) async throws -> String
+    /// Fetches the schema and a small sample of data from a given table or collection.
+    ///
+    /// The implementation should return a formatted string containing both the column
+    /// names/types (schema) and a few sample rows. This combined string provides
+    /// essential context for the LLM prompt.
+    ///
+    /// - Parameter tableName: The name of the table or data entity to inspect.
+    /// - Returns: A formatted string containing the schema and sample data.
+    /// - Throws: An `AppError` if the query fails.
+    func fetchSchemaAndSample(tableName: String) async throws -> String
 }

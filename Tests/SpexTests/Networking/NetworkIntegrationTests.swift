@@ -1,4 +1,5 @@
 import XCTest
+
 @testable import Spex
 
 final class NetworkIntegrationTests: XCTestCase {
@@ -16,17 +17,17 @@ final class NetworkIntegrationTests: XCTestCase {
     func testOpenAIClient_Success() async throws {
         // ARRANGE
         let mockResponseData = """
-        {
-            "choices": [
-                {
-                    "message": {
-                        "role": "assistant",
-                        "content": "This is the generated code."
+            {
+                "choices": [
+                    {
+                        "message": {
+                            "role": "assistant",
+                            "content": "This is the generated code."
+                        }
                     }
-                }
-            ]
-        }
-        """.data(using: .utf8)!
+                ]
+            }
+            """.data(using: .utf8)!
 
         MockURLProtocol.requestHandler = { request in
             let response = HTTPURLResponse(
@@ -37,12 +38,12 @@ final class NetworkIntegrationTests: XCTestCase {
             )!
             return (response, mockResponseData)
         }
-        
+
         let settings = Settings.mock()
         let sessionConfig = URLSessionConfiguration.ephemeral
         sessionConfig.protocolClasses = [MockURLProtocol.self]
         let mockSession = URLSession(configuration: sessionConfig)
-        
+
         let client = try OpenAIClient(settings: settings, urlSession: mockSession)
 
         // ACT
@@ -71,7 +72,7 @@ class MockURLProtocol: URLProtocol {
             XCTFail("Received unexpected request with no handler set.")
             return
         }
-        
+
         do {
             let (response, data) = try handler(request)
             client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)

@@ -29,19 +29,19 @@ struct SpecLoader {
 
         do {
             let spec = try TOMLDecoder().decode(Specification.self, from: fileContent)
-            
+
             // Validate that datasets have actual data sources
             for dataset in spec.datasets {
                 if dataset.sampleDataPath == nil && dataset.sampleDataBlock == nil {
                     throw AppError.validationError(
                         """
-                        
+
                         It looks like your spec.toml is missing sample data for dataset '\(dataset.name)'.
-                        
+
                         Please edit '\(path)' and either:
                         1. Add a sample_data_path pointing to a CSV file, or
                         2. Add a sample_data_block with inline sample data
-                        
+
                         Example:
                         [[dataset]]
                         name = "\(dataset.name)"
@@ -55,16 +55,16 @@ struct SpecLoader {
                     )
                 }
             }
-            
+
             // Also check output datasets if they exist
             if let outputDatasets = spec.outputDatasets {
                 for dataset in outputDatasets {
                     if dataset.sampleDataPath == nil && dataset.sampleDataBlock == nil {
                         throw AppError.validationError(
                             """
-                            
+
                             Missing sample data for output dataset '\(dataset.name)'.
-                            
+
                             While output samples are optional, providing them greatly improves the quality of generated code.
                             Please edit '\(path)' and add a sample_data_block showing expected output format.
                             """
@@ -72,7 +72,7 @@ struct SpecLoader {
                     }
                 }
             }
-            
+
             return spec
         } catch let error as AppError {
             // Re-throw AppErrors as-is
@@ -82,10 +82,10 @@ struct SpecLoader {
             if fileContent.contains("# sample_data_path") || fileContent.contains("# sample_data_block") {
                 throw AppError.validationError(
                     """
-                    
+
                     Your spec.toml has commented-out sample data fields.
                     Please edit '\(path)' and uncomment either sample_data_path or sample_data_block for each dataset.
-                    
+
                     Quick tip: Remove the '#' and fill in actual data:
                     sample_data_block = \"\"\"
                     column1,column2,column3
@@ -94,7 +94,7 @@ struct SpecLoader {
                     """
                 )
             }
-            
+
             // Provide a more detailed error message for TOML parsing issues.
             let detailedError = "Failed to parse TOML from '\(path)': \(error.localizedDescription)"
             throw AppError.parsingError(detailedError)

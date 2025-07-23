@@ -17,26 +17,26 @@ import Foundation
 /// +-------+---+----------------+
 /// ```
 struct SparkAsciiDataParser: DataParser {
-    func parse(from rawString: String) -> ParsedSample? {
-        let lines = rawString.split(separator: "\n")
-        
-        // Isolate only the lines that contain table data, ignoring the decorative lines like "+---+---+"
-        let tableLines = lines.filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("|") }
+  func parse(from rawString: String) -> ParsedSample? {
+    let lines = rawString.split(separator: "\n")
 
-        guard !tableLines.isEmpty else { return nil }
+    // Isolate only the lines that contain table data, ignoring the decorative lines like "+---+---+"
+    let tableLines = lines.filter { $0.trimmingCharacters(in: .whitespaces).hasPrefix("|") }
 
-        // Helper to split a single line (e.g., "| Alice | 29 |") into an array of cell values (e.g., ["Alice", "29"])
-        let extractCells = { (line: Substring) -> [String] in
-            return line.split(separator: "|")
-                .map { $0.trimmingCharacters(in: .whitespaces) }
-                .filter { !$0.isEmpty } // Removes empty strings that result from the leading and trailing pipes
-        }
+    guard !tableLines.isEmpty else { return nil }
 
-        let header = extractCells(tableLines[0])
-        let rows = tableLines.dropFirst().map(extractCells)
-
-        if header.isEmpty { return nil }
-        
-        return (header, rows)
+    // Helper to split a single line (e.g., "| Alice | 29 |") into an array of cell values (e.g., ["Alice", "29"])
+    let extractCells = { (line: Substring) -> [String] in
+      return line.split(separator: "|")
+        .map { $0.trimmingCharacters(in: .whitespaces) }
+        .filter { !$0.isEmpty }  // Removes empty strings that result from the leading and trailing pipes
     }
+
+    let header = extractCells(tableLines[0])
+    let rows = tableLines.dropFirst().map(extractCells)
+
+    if header.isEmpty { return nil }
+
+    return (header, rows)
+  }
 }

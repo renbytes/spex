@@ -1,5 +1,5 @@
 {
-  "originHash" : "aa07ea8a92e74b8efd85f18a46201bc571182b92dcc788dcc812616ea689dc3f",
+  "originHash" : "6e8bc0767775733a1ee142e13e8ca2bb7f8dd1570e89feac0b2f1163b96e3d29",
   "pins" : [
     {
       "identity" : "async-http-client",
@@ -44,6 +44,33 @@
       "state" : {
         "revision" : "3498e60218e6003894ff95192d756e238c01f44e",
         "version" : "4.7.1"
+      }
+    },
+    {
+      "identity" : "noora",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tuist/Noora.git",
+      "state" : {
+        "revision" : "0e8aaa665c5ea0b1a556bcca00aade9abc10b737",
+        "version" : "0.43.0"
+      }
+    },
+    {
+      "identity" : "path",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/tuist/path",
+      "state" : {
+        "revision" : "7c74ac435e03a927c3a73134c48b61e60221abcb",
+        "version" : "0.3.8"
+      }
+    },
+    {
+      "identity" : "progress.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/jkandzi/Progress.swift.git",
+      "state" : {
+        "revision" : "fed6598735d7982058690acf8f52a0a5fdaeb3e0",
+        "version" : "0.4.0"
       }
     },
     {
@@ -278,6 +305,15 @@
       "state" : {
         "revision" : "1ac347c06611750ca8ef2a599cc5c25f9af75f1b",
         "version" : "0.2.1"
+      }
+    },
+    {
+      "identity" : "table",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/JanGorman/Table.git",
+      "state" : {
+        "revision" : "7b8521c3b1078ba0b347964aec7c503cd6f1ff40",
+        "version" : "1.1.1"
       }
     },
     {

@@ -9,7 +9,7 @@ Adhere to the following principles STRICTLY:
 
 ### CRITICAL RULES ###
 1.  **DO NOT** output any conversational text, explanations, apologies, or introductory sentences.
-2.  ourresponse **MUST** begin directly with `### FILE: job.py` and nothing else.
+2.  Your response **MUST** begin directly with `### FILE: job.py` and nothing else.
 3.  **LAZY EVALUATION & SINGLE ACTION:** All functions in `functions.py` **MUST** return a DataFrame (a transformation) and **MUST NOT** trigger any Spark actions (like `.count()`, `.collect()`, `.agg()`, `.first()`, `.show()`). The one and only action should be in `job.py` when writing the final results.
 4.  **NO DRIVER-SIDE CALCULATIONS:** All data manipulation and calculations **MUST** be done within the Spark DataFrame API using `pyspark.sql.functions`. Do not pull data to the driver to perform calculations in Python.
 5.  **UNIFIED AGGREGATION:** You **MUST** perform all aggregations in a single `groupBy().agg()` call. Do not calculate metrics in separate DataFrames and join them.

@@ -80,9 +80,9 @@ Explore real-world use cases in the `examples/` directory:
 
 To ensure code quality, run the following commands:
 
-- **Format:** `cargo fmt`
-- **Lint:** `cargo clippy -- -D warnings`
-- **Test:** `cargo test`
+- **Format:** `TBD`
+- **Lint:** `TBD`
+- **Test:** `swift test`
 
 ### Contributing
 
@@ -99,5 +99,4 @@ This project is licensed under the MIT OR Apache-2.0 license.
 ## Support
 
 - 📖 **Documentation:** Check the `examples/` directory for detailed use cases
-- 🐛 **Issues:** Report bugs on [GitHub Issues](https://github.com/renbytes/specds/issues)
-- 💬 **Discussions:** Join conversations on [GitHub Discussions](https://github.com/renbytes/specds/discussions)
+- 🐛 **Issues:** Report bugs on [GitHub Issues](https://github.com/renbytes/spex/issues)

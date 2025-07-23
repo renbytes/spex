@@ -6,9 +6,10 @@ aa    ]8I  88b,   ,a8"  "8b,   ,aa   ,d8" "8b,
 `"YbbdP"'  88`YbbdP"'    `"Ybbd8"'  8P'     `Y8  
            88                                      
            88    
-```                                
-    👋 Welcome to Spex!
-    Your AI-powered data pipeline generator
+```
+  
+👋 Welcome to Spex!
+Your AI-powered data pipeline generator
  
 **Write a 5-line spec. Get a complete data pipeline.**
 

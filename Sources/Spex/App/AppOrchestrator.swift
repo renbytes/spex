@@ -1,5 +1,6 @@
 import Foundation
 import Rainbow
+import Noora
 
 /// The main orchestrator for the application logic. This component ties together all the
 /// services required to execute a command, such as loading settings, building specifications,
@@ -21,12 +22,25 @@ final actor AppOrchestrator {
     func runGenerate(args: GenerateCommand.Arguments) async throws {
         // --- 1. Initialize Configuration ---
         let settings = Settings()
-        Logger.log("Configuration loaded.", type: .info)
 
-        // --- 2. Determine LLM Provider and Model ---
-        let provider = args.provider ?? .openai
+        // --- 2. Determine LLM Provider and Model (with interactive prompt) ---
+        var provider: LlmProvider
+        if let specifiedProvider = args.provider {
+            provider = specifiedProvider
+        } else {
+            let choices = LlmProvider.allCases.map { $0.rawValue.capitalized }
+            // Use Noora() instance for prompts
+            let noora = Noora()
+            let chosenProviderName: String = noora.singleChoicePrompt(
+                title: "LLM Provider Selection",
+                question: "Which LLM provider would you like to use?",
+                options: choices
+            )
+            provider = LlmProvider(rawValue: chosenProviderName.lowercased()) ?? .openai
+            print() // Add a newline for better spacing after the prompt
+        }
+
         let model: String
-        
         switch provider {
         case .openai:
             model = args.model ?? settings.openaiDefaultModel
@@ -38,42 +52,50 @@ final actor AppOrchestrator {
 
         // --- 3. Initialize LLM Client ---
         let llmClient: any LlmClient
-            switch provider {
-                case .openai:
-                    llmClient = try OpenAIClient(settings: settings)
-                case .gemini:
-                    llmClient = try GeminiClient(settings: settings)
-                case .internalGw:
-                    llmClient = InternalClient(settings: settings)
-            }
-        Logger.log("Using provider: \(provider.rawValue.capitalized), model: \(model)", type: .info)
+        switch provider {
+        case .openai:
+            llmClient = try OpenAIClient(settings: settings)
+        case .gemini:
+            llmClient = try GeminiClient(settings: settings)
+        case .internalGw:
+            llmClient = InternalClient(settings: settings)
+        }
 
         // --- 4. Load and Validate Specification ---
-        let specLoader = SpecLoader()
-        var spec = try specLoader.load(from: args.spec)
-        Logger.log("Specification loaded and parsed.", type: .info)
+        // Fixed API Call: Use Noora() instance for progress steps
+        let noora = Noora()
+        var spec: Specification = try await noora.progressStep(message: "Loading and validating specification") { _ in
+            let specLoader = SpecLoader()
+            let loadedSpec = try specLoader.load(from: args.spec)
 
-        let specValidator = SpecValidator()
-        try specValidator.validate(spec)
-        Logger.log("Specification validated.", type: .info)
-
-        // Add a warning if the optional output dataset is not provided.
-        if spec.outputDatasets == nil || spec.outputDatasets!.isEmpty {
-            Logger.log("No output dataset provided. Providing a sample output can improve generation quality.", type: .warning)
+            let specValidator = SpecValidator()
+            try specValidator.validate(loadedSpec)
+            
+            if loadedSpec.outputDatasets == nil || loadedSpec.outputDatasets!.isEmpty {
+                Logger.log("No output dataset provided. Providing a sample output can improve generation quality.", type: .warning)
+            }
+            return loadedSpec
         }
 
         // --- 5. Enrich Specification with Sample Data ---
-        spec = try await self.enrich(spec)
-        Logger.log("Specification enriched with sample data.", type: .info)
+        spec = try await noora.progressStep(message: "Enriching specification with sample data") { _ in
+            try await self.enrich(spec)
+        }
 
         // --- 6. Generate Code ---
-        let generator = try CodeGenerator(llmClient: llmClient)
-        let generatedCode = try await generator.generate(spec: spec, model: model)
-        Logger.log("Code generation complete.", type: .info)
+        let generatedCode = try await noora.progressStep(message: "Generating project code via \(provider.rawValue.capitalized) (\(model))") { _ in
+            let generator = try CodeGenerator(llmClient: llmClient)
+            return try await generator.generate(spec: spec, model: model)
+        }
 
         // --- 7. Write Files to Disk ---
-        let writer = try CodeWriter()
-        try writer.writeFiles(rawOutput: generatedCode, spec: spec)
+        let outputDir = try await noora.progressStep(message: "Writing project files to disk") { _ in
+            let writer = try CodeWriter()
+            return try writer.writeFiles(rawOutput: generatedCode, spec: spec)
+        }
+        
+        print("\n🎉".bold, "Successfully generated project!".bold)
+        print("   Location: \(outputDir.path.cyan)")
     }
 
     /// Executes the `init` command workflow.

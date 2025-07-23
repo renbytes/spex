@@ -1,5 +1,7 @@
 import Foundation
 import Rainbow
+import Progress
+import Table
 
 /// A component responsible for writing generated code and project infrastructure to the filesystem.
 ///
@@ -33,24 +35,29 @@ struct CodeWriter {
     /// This function orchestrates the entire writing process:
     /// 1. Creates the nested output directory for the new project.
     /// 2. Saves the raw LLM output to a log file for debugging.
-    /// 3. Parses the raw output and writes each code file.
+    /// 3. Parses the raw output and writes each code file, showing a progress bar.
     /// 4. Creates additional project infrastructure (Makefiles, READMEs, etc.).
-    /// 5. Prints helpful next steps to the console.
+    /// 5. Prints a summary table and helpful next steps to the console.
     ///
     /// - Parameters:
     ///   - rawOutput: The complete string response from the LLM.
     ///   - spec: The `Specification` used for the generation, needed for metadata.
     /// - Throws: An `AppError` if any file or directory operation fails.
-    func writeFiles(rawOutput: String, spec: Specification) throws {
+    /// - Returns: The URL of the final output directory.
+    func writeFiles(rawOutput: String, spec: Specification) throws -> URL {
         let outputDir = try createOutputDirectory(for: spec)
         
         try writeRawOutputLog(rawOutput, to: outputDir)
-        try parseAndWriteFiles(rawOutput, to: outputDir)
-        try createProjectInfrastructure(in: outputDir, for: spec)
+        let generatedFiles = try parseAndWriteFiles(rawOutput, to: outputDir)
+        let infraFiles = try createProjectInfrastructure(in: outputDir, for: spec)
         
-        print("\n✅ Successfully generated our project!".green.bold)
-        print("📁 Location: \(outputDir.path)".cyan)
-        printNextSteps(for: spec, in: outputDir)
+        printSummary(
+            in: outputDir,
+            for: spec,
+            generatedFiles: generatedFiles + infraFiles
+        )
+        
+        return outputDir
     }
     
     // MARK: Private: Directory and File Creation
@@ -68,7 +75,6 @@ struct CodeWriter {
         
         do {
             try fileManager.createDirectory(at: outputDir, withIntermediateDirectories: true, attributes: nil)
-            print("\nWriting output to: \(outputDir.path)".yellow)
             return outputDir
         } catch {
             throw AppError.fileWriteError(path: outputDir.path, source: error)
@@ -80,17 +86,21 @@ struct CodeWriter {
         let logURL = outputDir.appendingPathComponent("raw_llm_output.log")
         do {
             try rawOutput.write(to: logURL, atomically: true, encoding: .utf8)
-            print("  ✓ Saved raw LLM output to raw_llm_output.log".green)
         } catch {
             throw AppError.fileWriteError(path: logURL.path, source: error)
         }
     }
     
     /// Parses the LLM output containing multiple file blocks and writes each to disk.
-    private func parseAndWriteFiles(_ rawOutput: String, to outputDir: URL) throws {
+    private func parseAndWriteFiles(_ rawOutput: String, to outputDir: URL) throws -> [String] {
         let fileBlocks = rawOutput.components(separatedBy: "### FILE:")
+        let writeableBlocks = fileBlocks.filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         
-        for block in fileBlocks where !block.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+        var generatedPaths: [String] = []
+        
+        // Fixed API Call: The Progress library wraps an iterable sequence with a simple initializer.
+        // We loop through the Progress wrapper which displays the progress bar automatically.
+        for block in Progress(writeableBlocks) {
             let lines = block.trimmingCharacters(in: .whitespacesAndNewlines).components(separatedBy: .newlines)
             guard let pathLine = lines.first else { continue }
             
@@ -101,11 +111,9 @@ struct CodeWriter {
             
             let fileURL = outputDir.appendingPathComponent(relativePath)
             
-            // Create parent directories if they don't exist.
             let parentDir = fileURL.deletingLastPathComponent()
             try fileManager.createDirectory(at: parentDir, withIntermediateDirectories: true, attributes: nil)
             
-            // Clean the code content by removing markdown fences.
             var content = lines.dropFirst().joined(separator: "\n")
             if content.hasPrefix("```") {
                 content = String(content.dropFirst(3))
@@ -119,37 +127,43 @@ struct CodeWriter {
             
             do {
                 try content.trimmingCharacters(in: .whitespacesAndNewlines).write(to: fileURL, atomically: true, encoding: .utf8)
-                print("  ✓ Wrote \(fileURL.path)".green)
+                generatedPaths.append(relativePath)
             } catch {
                 throw AppError.fileWriteError(path: fileURL.path, source: error)
             }
         }
+        return generatedPaths
     }
     
     // MARK: Private: Project Infrastructure
     
     /// Creates additional project files like Makefiles, .gitignore, and READMEs.
-    private func createProjectInfrastructure(in outputDir: URL, for spec: Specification) throws {
-        // Write .gitignore
-        try writeTemplate(name: ".gitignore", content: try configManager.getGitignore(), to: outputDir)
+    private func createProjectInfrastructure(in outputDir: URL, for spec: Specification) throws -> [String] {
+        var createdFiles: [String] = []
         
-        // Write Makefile (if one exists for the language)
+        try writeTemplate(name: ".gitignore", content: try configManager.getGitignore(), to: outputDir)
+        createdFiles.append(".gitignore")
+        
         if let makefileContent = try? configManager.getMakefile(for: spec.language) {
             try writeTemplate(name: "Makefile", content: makefileContent, to: outputDir)
+            createdFiles.append("Makefile")
         }
         
-        // Write pyproject.toml (if it exists)
         if let pyproject = configManager.getPyprojectToml(for: spec.language) {
             try writeTemplate(name: "pyproject.toml", content: pyproject, to: outputDir)
+            createdFiles.append("pyproject.toml")
         }
         
-        // Write environment.yml (if it exists)
         if let envYml = configManager.getEnvironmentYml(for: spec.language) {
             try writeTemplate(name: "environment.yml", content: envYml, to: outputDir)
+            createdFiles.append("environment.yml")
         }
         
         try createDirectoryStructure(in: outputDir)
         try createProjectReadme(in: outputDir, for: spec)
+        createdFiles.append("README.md")
+        
+        return createdFiles
     }
     
     /// Creates the standard directory structure for a data science project.
@@ -163,11 +177,9 @@ struct CodeWriter {
         for dir in directories {
             let dirURL = outputDir.appendingPathComponent(dir)
             try fileManager.createDirectory(at: dirURL, withIntermediateDirectories: true, attributes: nil)
-            // Create .gitkeep file to preserve empty directories in git.
             let gitkeepURL = dirURL.appendingPathComponent(".gitkeep")
             try "".write(to: gitkeepURL, atomically: true, encoding: .utf8)
         }
-        print("  ✓ Created directory structure".green)
     }
     
     /// Creates a comprehensive project README by rendering a template.
@@ -195,12 +207,11 @@ struct CodeWriter {
     
     // MARK: Private Helpers
     
-    /// Helper to write a template file and print a status message.
+    /// Helper to write a template file.
     private func writeTemplate(name: String, content: String, to outputDir: URL) throws {
         let fileURL = outputDir.appendingPathComponent(name)
         do {
             try content.write(to: fileURL, atomically: true, encoding: .utf8)
-            print("  ✓ Created \(name)".green)
         } catch {
             throw AppError.fileWriteError(path: fileURL.path, source: error)
         }
@@ -220,11 +231,46 @@ struct CodeWriter {
         }
     }
     
+    /// Prints the final summary table and next steps to the console.
+    private func printSummary(in outputDir: URL, for spec: Specification, generatedFiles: [String]) {
+        print("\n" + "Project Summary".bold.underline)
+        
+        var tableData: [[String]] = [
+            ["Project Name:", outputDir.lastPathComponent],
+            ["Language:", spec.language.capitalized],
+            ["Analysis Type:", spec.analysisType]
+        ]
+        
+        let keyFiles = ["README.md", "Makefile", "job.py", "environment.yml", "pyproject.toml"]
+        let primaryFiles = generatedFiles.filter { path in keyFiles.contains { $0 == URL(fileURLWithPath: path).lastPathComponent } }
+        
+        if !primaryFiles.isEmpty {
+            // Add a separator row manually.
+            tableData.append(["──────────────", "────────────────────────────────────────"])
+            tableData.append(["Key Files", ""])
+            tableData.append(contentsOf: primaryFiles.map { ["✓ " + $0, ""]})
+        }
+        
+        // Fixed API Call: The Table initializer takes data and returns a table that can be rendered with .table()
+        do {
+            let table = try Table(data: tableData).table()
+            print(table)
+        } catch {
+            // Fallback to simple printing if table creation fails
+            print("Project Details:")
+            for row in tableData {
+                print("  \(row[0]) \(row[1])")
+            }
+        }
+        
+        printNextSteps(for: spec, in: outputDir)
+    }
+    
     /// Prints helpful next steps for the user to the console.
     private func printNextSteps(for spec: Specification, in outputDir: URL) {
         let hasCondaEnv = fileManager.fileExists(atPath: outputDir.appendingPathComponent("environment.yml").path)
         
-        print("\n🚀 Next steps:".bold)
+        print("\n" + "🚀 Next steps:".bold)
         print("   cd \(outputDir.path)")
         
         if hasCondaEnv {
@@ -238,8 +284,7 @@ struct CodeWriter {
         
         print("   make run                # Run the analysis")
         print("   make test               # Run tests")
-        print("\n📖 See README.md for detailed instructions".italic)
-        print("🐍 Modern Python tooling: pyproject.toml + conda environments".italic)
+        print("\n" + "📖 See README.md for detailed instructions".italic)
     }
 }
 

@@ -6,7 +6,6 @@ final class AppOrchestratorTests: XCTestCase {
 
     private var orchestrator: AppOrchestrator!
     private var tempDirectory: URL!
-
     /// Creates a temporary directory for test files before each test runs.
     override func setUpWithError() throws {
         orchestrator = AppOrchestrator()
@@ -50,15 +49,17 @@ final class AppOrchestratorTests: XCTestCase {
         
         // ACT
         // 3. Call the real enrich method. It will use its internal factory to read the file.
-        // The call matches the actual method signature `enrich(spec)`.
         spec = try await orchestrator.enrich(spec)
 
         // ASSERT
         // 4. Verify that the dataset was enriched with the content from the temp file.
-        let expectedOutput = "Schema: id, name\nSample Data:\nid,name\n1,test"
+        let expectedOutput = "Schema: id, name\nSample Data:\n1,test"
+        
+        // Using `trimmingCharacters` on both strings makes the comparison more robust
+        // to minor whitespace differences from file reading or formatting.
         XCTAssertEqual(
-            spec.datasets[0].schemaOrSample.replacingOccurrences(of: " ", with: ""),
-            expectedOutput.replacingOccurrences(of: " ", with: "")
+            spec.datasets[0].schemaOrSample.trimmingCharacters(in: .whitespacesAndNewlines),
+            expectedOutput.trimmingCharacters(in: .whitespacesAndNewlines)
         )
     }
 

@@ -7,8 +7,9 @@ aa    ]8I  88b,   ,a8"  "8b,   ,aa   ,d8" "8b,
            88                                      
            88    
 ```
-  
+
 👋 Welcome to Spex!
+
 Your AI-powered data pipeline generator
  
 **Write a 5-line spec. Get a complete data pipeline.**
@@ -72,7 +73,7 @@ You get a complete pipeline with tests, visualizations, and documentation.
 Explore real-world use cases in the `examples/` directory:
 
 - **[E-commerce](examples/ecommerce/)** - Top selling products analysis (SQL)
-- **[Healthcare](examples/healthcare/)** - Patient length of stay analysis (SQL) 
+- **[Healthcare](examples/healthcare/)** - Patient length of stay analysis (SQL)
 - **[Finance](examples/finance/)** - Stock volatility calculation (Python)
 - **[Energy](examples/energy/)** - Renewable energy production analysis (Python)
 - **[Consumer Tech](examples/consumer_tech/)** - Ad attribution pipeline (PySpark)
@@ -98,7 +99,7 @@ Run:
 swift-format -i -r Sources/ Tests/
 ```
 
-> Note: you will need to install `swift-lint` if you don't already have it. 
+> Note: you will need to install `swift-lint` if you don't already have it. Run `brew install swift-format`.
 
 **Test**
 
@@ -115,11 +116,7 @@ swift test
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## License
-
-This project is licensed under the MIT OR Apache-2.0 license.
-
 ## Support
 
-- 📖 **Documentation:** Check the `examples/` directory for detailed use cases
+- 📖 **Documentation:** Check the [/docs](docs/)
 - 🐛 **Issues:** Report bugs on [GitHub Issues](https://github.com/renbytes/spex/issues)

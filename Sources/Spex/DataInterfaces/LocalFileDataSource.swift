@@ -31,11 +31,12 @@ struct LocalFileDataSource: DataSource {
     }
     
     private func formatSample(header: [String], rows: [[String]]) -> String {
-        // The schema line should have a space after the comma for readability.
+        // Create a clean, readable schema line with standard spacing.
         let schema = header.joined(separator: ", ")
         
-        // The data rows should have no space to match the test's expectation.
-        let sampleRows = rows.prefix(5).map { $0.joined(separator: ",") }.joined(separator: "\n")
+        // The sample data should not include the header, as it's redundant.
+        // Use standard spacing here as well for consistency.
+        let sampleRows = rows.prefix(5).map { $0.joined(separator: ", ") }.joined(separator: "\n")
         
         return """
         Schema: \(schema)

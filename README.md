@@ -1,5 +1,4 @@
-```
-<pre>
+
 ,adPPYba,  8b,dPPYba,    ,adPPYba,  8b,     ,d8  
 I8[    ""  88P'    "8a  a8P_____88   `Y8, ,8P'   
  `"Y8ba,   88       d8  8PP"""""""     )888(     
@@ -7,9 +6,9 @@ aa    ]8I  88b,   ,a8"  "8b,   ,aa   ,d8" "8b,
 `"YbbdP"'  88`YbbdP"'    `"Ybbd8"'  8P'     `Y8  
            88                                      
            88                                      
-</pre>
-```
-
+    👋 Welcome to Spex!
+    Your AI-powered data pipeline generator
+ 
 **Write a 5-line spec. Get a complete data pipeline.**
 
 Spex uses AI to generate production-ready PySpark/Python/SQL pipelines from simple specifications. No more boilerplate. No more setup hassle. Just describe what you want.

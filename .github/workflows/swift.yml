@@ -1,0 +1,21 @@
+name: Swift CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: swift build -v
+    - name: Run tests
+      run: swift test -v
+    - name: Format check
+      run: |
+        brew install swift-format
+        swift-format lint -r Sources/

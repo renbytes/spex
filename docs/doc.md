@@ -3,13 +3,13 @@ graph TD
     subgraph Phobos Package
         direction LR
 
-        subgraph User Facing API
+        subgraph "User Facing API"
             direction TB
             A[User Analysis Code] --> phobos_map("phobos.map()")
             A --> phobos_datasets("phobos.datasets.read_from_hms()")
         end
 
-        subgraph Core Logic & Utilities
+        subgraph "Core Logic & Utilities"
             direction TB
             phobos_map -- "is a wrapper for" --> kernel("kernel.kernel()")
             phobos_datasets -- "reads from" --> B((HMS Tables))
@@ -61,7 +61,7 @@ graph TD
     commentary --> utils
 
     %% Styling
-    style Core Logic & Utilities fill:#f9f,stroke:#333,stroke-width:2px
-    style User Facing API fill:#ccf,stroke:#333,stroke-width:2px
-    style LOB Modules fill:#f8d5a2,stroke:#333,stroke-width:2px
+    style "Core Logic & Utilities" fill:#f9f,stroke:#333,stroke-width:2px
+    style "User Facing API" fill:#ccf,stroke:#333,stroke-width:2px
+    style "LOB Modules" fill:#f8d5a2,stroke:#333,stroke-width:2px
 ```

@@ -9,23 +9,324 @@ Adhere to the following principles STRICTLY:
 
 ### CRITICAL RULES ###
 1.  **DO NOT** output any conversational text, explanations, apologies, or introductory sentences.
-2.  ourresponse **MUST** begin directly with `### FILE: job.py` and nothing else.
-3.  ourentire response **MUST** consist of multiple, clearly marked file blocks.
+2.  Response **MUST** begin directly with `### FILE: job.py` and nothing else.
+3.  Entire response **MUST** consist of multiple, clearly marked file blocks.
 
-### ARCHITECTURAL PRINCIPLES ###
-- **COMPREHENSIVE DATA PRODUCT:** Generate a complete data science pipeline including:
-    * **Data Processing & Analysis:** Core business logic and metrics calculation.
-    * **Rich Visualizations:** Static plots (matplotlib/seaborn) and interactive charts (plotly).
-    * **Interactive Dashboard:** A complete Streamlit app with filters and controls.
-    * **Professional Reports:** HTML reports with an executive summary and charts.
-    * **Data Quality:** Validation checks, outlier detection, and data profiling.
-    * **Configuration Management:** Centralized, type-safe settings.
-    * **Comprehensive Testing:** Unit tests, integration tests, and data validation tests.
-- **PYTHON BEST PRACTICES:**
-    * **Separation of Concerns:** Each file must have a single, clear responsibility.
-    * **DRY (Don't Repeat Yourself):** All business logic must be encapsulated in reusable functions.
-    * **Composability:** Functions should be small and pure where possible, making them easily testable.
-    * **Professional Standards:** Use Google-style docstrings, type hints, and proper error handling.
+Data Loading & Schema Validation
+✅ GOOD: Explicit schema validation with Pandera
+pythonimport pandera as pa
+from pandera.typing import DataFrame
+
+class EventSchema(pa.DataFrameModel):
+    user_id: str
+    event_timestamp: pd.Timestamp
+    amount: float = pa.Field(ge=0)  # Non-negative amounts
+    
+    class Config:
+        strict = True
+
+@pa.check_types
+def load_events(filepath: str) -> DataFrame[EventSchema]:
+    return pd.read_csv(filepath, parse_dates=['event_timestamp'])
+❌ BAD: No schema validation or type checking
+pythondef load_events(filepath: str):  # No return type hint
+    df = pd.read_csv(filepath)  # No date parsing, no validation
+    return df  # Could contain invalid data types or missing columns
+Data Processing & Vectorization
+✅ GOOD: Vectorized operations with pandas
+pythondef calculate_user_metrics(df: pd.DataFrame) -> pd.DataFrame:
+    return (df
+        .assign(
+            is_weekend=df['event_date'].dt.weekday >= 5,
+            amount_category=pd.cut(df['amount'], bins=[0, 50, 200, np.inf], 
+                                 labels=['low', 'medium', 'high'])
+        )
+        .groupby('user_id')
+        .agg({
+            'amount': ['sum', 'mean', 'count'],
+            'is_weekend': 'sum',
+            'event_date': ['min', 'max']
+        })
+        .round(2)
+    )
+❌ BAD: Loops and inefficient operations
+pythondef bad_user_metrics(df: pd.DataFrame) -> pd.DataFrame:
+    results = []
+    for user_id in df['user_id'].unique():  # Loops are slow!
+        user_data = df[df['user_id'] == user_id]
+        total = 0
+        for amount in user_data['amount']:  # Nested loop!
+            total += amount
+        results.append({'user_id': user_id, 'total': total})
+    
+    return pd.DataFrame(results)
+Memory Management & Data Types
+✅ GOOD: Efficient data types and chunked processing
+pythondef optimize_datatypes(df: pd.DataFrame) -> pd.DataFrame:
+    return df.astype({
+        'user_id': 'category',  # Categorical for repeated strings
+        'amount': 'float32',    # Smaller float for memory efficiency
+        'event_count': 'uint16' # Unsigned int for counts
+    })
+
+def process_large_file(filepath: str, chunksize: int = 10000) -> pd.DataFrame:
+    chunks = []
+    for chunk in pd.read_csv(filepath, chunksize=chunksize):
+        processed_chunk = optimize_datatypes(chunk)
+        chunks.append(processed_chunk.groupby('category').sum())
+    
+    return pd.concat(chunks).groupby(level=0).sum()
+❌ BAD: Memory inefficient operations
+pythondef bad_memory_usage(df: pd.DataFrame) -> pd.DataFrame:
+    # Creates unnecessary copies
+    df = df.copy()
+    df = df.copy()
+    
+    # Inefficient string operations
+    df['user_id'] = df['user_id'].astype(str)  # Don't use str for categories
+    
+    # Loading entire large file at once
+    large_df = pd.read_csv('huge_file.csv')  # Might cause OOM
+    
+    return df
+Time Series & Date Operations
+✅ GOOD: Proper datetime handling with efficient operations
+pythondef analyze_time_patterns(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    df['event_date'] = pd.to_datetime(df['event_date'])
+    
+    return (df
+        .set_index('event_date')
+        .assign(
+            hour=lambda x: x.index.hour,
+            day_of_week=lambda x: x.index.day_name(),
+            is_business_hour=lambda x: x.hour.between(9, 17)
+        )
+        .resample('D')
+        .agg({
+            'amount': 'sum',
+            'user_id': 'nunique',
+            'is_business_hour': 'mean'
+        })
+    )
+❌ BAD: String operations on dates
+pythondef bad_date_handling(df: pd.DataFrame) -> pd.DataFrame:
+    # String operations instead of datetime
+    df['year'] = df['event_date'].str[:4]  # Slow string slicing
+    df['month'] = df['event_date'].str[5:7]
+    
+    # No proper date parsing
+    df['is_weekend'] = df['event_date'].apply(
+        lambda x: datetime.strptime(x, '%Y-%m-%d').weekday() >= 5
+    )  # Apply is slow for dates
+    
+    return df
+Groupby & Aggregation Patterns
+✅ GOOD: Efficient groupby with named aggregations
+pythondef user_behavior_analysis(df: pd.DataFrame) -> pd.DataFrame:
+    return (df
+        .groupby(['user_id', 'product_category'])
+        .agg(
+            total_spent=('amount', 'sum'),
+            avg_order_value=('amount', 'mean'),
+            order_count=('order_id', 'count'),
+            first_purchase=('event_date', 'min'),
+            last_purchase=('event_date', 'max')
+        )
+        .reset_index()
+        .assign(
+            days_active=lambda x: (x['last_purchase'] - x['first_purchase']).dt.days,
+            avg_days_between_orders=lambda x: x['days_active'] / x['order_count']
+        )
+    )
+❌ BAD: Multiple separate groupby operations
+pythondef bad_aggregation(df: pd.DataFrame) -> pd.DataFrame:
+    # Multiple scans of the same data
+    total_spent = df.groupby('user_id')['amount'].sum().reset_index()
+    avg_amount = df.groupby('user_id')['amount'].mean().reset_index()
+    order_count = df.groupby('user_id').size().reset_index()
+    
+    # Multiple joins instead of single aggregation
+    result = total_spent.merge(avg_amount, on='user_id')
+    result = result.merge(order_count, on='user_id')
+    
+    return result
+Error Handling & Data Quality
+✅ GOOD: Comprehensive error handling with logging
+pythonimport logging
+from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+def safe_data_processing(df: pd.DataFrame) -> tuple[pd.DataFrame, dict]:
+    issues = {'missing_values': 0, 'outliers': 0, 'duplicates': 0}
+    
+    # Handle missing values
+    missing_mask = df.isnull().any(axis=1)
+    issues['missing_values'] = missing_mask.sum()
+    if issues['missing_values'] > 0:
+        logger.warning(f"Found {issues['missing_values']} rows with missing values")
+    
+    # Detect and handle outliers
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+    for col in numeric_cols:
+        Q1, Q3 = df[col].quantile([0.25, 0.75])
+        IQR = Q3 - Q1
+        outlier_mask = (df[col] < Q1 - 1.5 * IQR) | (df[col] > Q3 + 1.5 * IQR)
+        issues['outliers'] += outlier_mask.sum()
+    
+    # Remove duplicates
+    initial_rows = len(df)
+    df_clean = df.drop_duplicates()
+    issues['duplicates'] = initial_rows - len(df_clean)
+    
+    return df_clean, issues
+❌ BAD: No error handling or validation
+pythondef risky_processing(df):  # No type hints
+    # No checks for missing data
+    result = df.groupby('user_id').mean()  # Will fail if non-numeric columns
+    
+    # No validation of results
+    return result  # Could return empty DataFrame or wrong structure
+Visualization Best Practices
+✅ GOOD: Reusable plotting functions with proper styling
+pythonimport matplotlib.pyplot as plt
+import seaborn as sns
+from typing import Optional, Tuple
+
+def create_styled_plot(figsize: Tuple[int, int] = (10, 6)) -> Tuple[plt.Figure, plt.Axes]:
+    """Create a standardized plot with consistent styling."""
+    plt.style.use('seaborn-v0_8')
+    fig, ax = plt.subplots(figsize=figsize)
+    
+    # Consistent styling
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.grid(True, alpha=0.3)
+    
+    return fig, ax
+
+def plot_user_metrics(df: pd.DataFrame, save_path: Optional[str] = None) -> plt.Figure:
+    """Create a comprehensive user metrics dashboard."""
+    fig, axes = plt.subplots(2, 2, figsize=(15, 10))
+    fig.suptitle('User Behavior Analysis', fontsize=16, fontweight='bold')
+    
+    # Revenue distribution
+    axes[0, 0].hist(df['total_spent'], bins=30, alpha=0.7, color='skyblue')
+    axes[0, 0].set_title('Revenue Distribution')
+    axes[0, 0].set_xlabel('Total Spent ($)')
+    
+    # Order frequency
+    axes[0, 1].scatter(df['order_count'], df['avg_order_value'], alpha=0.6)
+    axes[0, 1].set_title('Order Frequency vs Average Order Value')
+    
+    if save_path:
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+    
+    return fig
+❌ BAD: Inconsistent, hard-to-maintain plots
+pythondef bad_plotting(df):
+    # No styling or consistency
+    plt.figure()
+    plt.plot(df['x'], df['y'])  # No labels, titles, or formatting
+    plt.show()  # Forces display instead of returning figure
+    
+    # Hardcoded values
+    plt.figure(figsize=(8, 6))  # Magic numbers
+    plt.hist(df['amount'], bins=20, color='red')  # Hardcoded color
+    plt.savefig('plot.png')  # Hardcoded filename
+Configuration & Settings Management
+✅ GOOD: Type-safe configuration with Pydantic
+pythonfrom pydantic_settings import BaseSettings
+from pathlib import Path
+from typing import Optional
+
+class AnalysisConfig(BaseSettings):
+    """Type-safe configuration management."""
+    
+    # Data paths
+    input_data_path: Path = Path("data/raw")
+    output_path: Path = Path("outputs")
+    
+    # Analysis parameters
+    min_transaction_amount: float = 0.01
+    outlier_threshold: float = 3.0
+    date_range_days: int = 90
+    
+    # Visualization settings
+    figure_dpi: int = 300
+    color_palette: str = "viridis"
+    
+    # Optional API keys
+    external_api_key: Optional[str] = None
+    
+    class Config:
+        env_file = ".env"
+        env_prefix = "ANALYSIS_"
+
+# Usage
+config = AnalysisConfig()
+❌ BAD: Hardcoded values and global variables
+python# Scattered throughout codebase
+INPUT_PATH = "/Users/someone/data/file.csv"  # Hardcoded path
+THRESHOLD = 3.0  # Magic number
+API_KEY = "secret123"  # Hardcoded secret
+
+def process_data():
+    df = pd.read_csv(INPUT_PATH)  # Uses global
+    filtered = df[df['amount'] > THRESHOLD]  # Magic number
+    return filtered
+Testing Patterns
+✅ GOOD: Comprehensive testing with fixtures
+pythonimport pytest
+import pandas as pd
+from unittest.mock import patch, MagicMock
+
+@pytest.fixture
+def sample_data():
+    """Create consistent test data."""
+    return pd.DataFrame({
+        'user_id': ['user1', 'user2', 'user1'],
+        'amount': [100.0, 50.0, 75.0],
+        'event_date': pd.date_range('2024-01-01', periods=3)
+    })
+
+@pytest.fixture
+def config():
+    """Test configuration."""
+    return AnalysisConfig(
+        input_data_path=Path("test_data"),
+        min_transaction_amount=1.0
+    )
+
+def test_calculate_user_metrics(sample_data):
+    """Test user metrics calculation with known data."""
+    result = calculate_user_metrics(sample_data)
+    
+    assert len(result) == 2  # Two unique users
+    assert 'total_spent' in result.columns
+    assert result.loc[result['user_id'] == 'user1', 'total_spent'].iloc[0] == 175.0
+
+@patch('pandas.read_csv')
+def test_load_data_with_mock(mock_read_csv, sample_data):
+    """Test data loading with mocked file operations."""
+    mock_read_csv.return_value = sample_data
+    
+    result = load_events('fake_path.csv')
+    
+    mock_read_csv.assert_called_once_with('fake_path.csv', parse_dates=['event_timestamp'])
+    assert len(result) == 3
+❌ BAD: No tests or poor test structure
+pythondef test_something():
+    # No clear arrange/act/assert structure
+    df = pd.DataFrame({'a': [1, 2, 3]})
+    result = some_function(df)
+    assert result is not None  # Weak assertion
+    
+# No fixtures, hardcoded test data
+def test_other():
+    df = pd.read_csv("actual_production_file.csv")  # Uses real data!
+    assert len(df) > 0  # Test depends on external data
 
 ---
 ### USER SPECIFICATION ###
